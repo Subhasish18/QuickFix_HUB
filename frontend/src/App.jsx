@@ -18,12 +18,7 @@ const App = () => {
         <Route path="/signup" element={<LandingPage />} />
         <Route path="/signup/user" element={<SignupUser />} />
         <Route path="/signup/provider" element={<SignupProvider />} />
-        {/* Protected dashboard route */}
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } />
+        
       </Routes>
     </Router>
   );
