@@ -1,0 +1,159 @@
+.featured-section {
+  padding: 60px 32px;
+  background-color: #f8fafc;
+}
+
+.featured-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 32px;
+  text-align: center;
+  position: relative;
+}
+
+.featured-title:after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  margin: 12px auto 0;
+  border-radius: 2px;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.service-card {
+  background-color: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  padding: 0.5rem;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+.service-image-container {
+  position: relative;
+  height: 180px;
+  width: 100%;
+  border-top-left-radius: 0.8rem;
+  border-top-right-radius: 0.8rem;
+  overflow: hidden;
+}
+
+.service-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.service-card:hover .service-image {
+  transform: scale(1.05);
+}
+
+.service-category-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #1e40af;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(4px);
+}
+
+.service-content {
+  width: 100%;
+  padding: 2px;
+  margin: 0rem;
+}
+
+.service-title {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 18px;
+  margin-bottom: 8px;
+  line-height: 2.3;
+  text-align: -webkit-auto;
+}
+
+.service-company {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #475569;
+  margin-bottom: 4px;
+}
+
+.service-company-icon {
+  margin-right: 6px;
+  color: #64748b;
+}
+
+.service-location {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+.service-location-icon {
+  margin-right: 6px;
+  color: #64748b;
+}
+
+.service-divider {
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 16px 0;
+}
+
+.service-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.service-rating {
+  display: flex;
+  align-items: center;
+  background-color: #fffbeb;
+  color: #92400e;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 4px 12px;
+  border-radius: 8px;
+}
+
+.star-icon {
+  color: #f59e0b;
+  margin-right: 6px;
+}
+
+.service-price {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  color: white;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 15px;
+}

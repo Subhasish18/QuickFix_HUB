@@ -1,0 +1,164 @@
+.hiw-section {
+  background-color: white;
+  padding: 4rem 0;
+}
+
+.hiw-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
+  .hiw-container {
+    padding: 0 2rem;
+  }
+}
+
+.hiw-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.hiw-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .hiw-title {
+    font-size: 2.5rem;
+  }
+}
+
+.hiw-subtitle {
+  font-size: 1.125rem;
+  color: #4b5563;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.hiw-steps {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .hiw-steps {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+.hiw-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 16rem;
+  text-align: center;
+  position: relative;
+  transition: transform 0.4s ease, box-shadow 0.3s ease;
+  background-color: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  cursor: pointer;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
+  
+}
+
+.hiw-step:hover {
+  transform: scale(1.1);
+  z-index: 2;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.hiw-steps:hover .hiw-step:not(:hover) {
+  filter: blur(4px);
+  transform: scale(0.95);
+  opacity: 0.5;
+  transition: filter 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Colored cards */
+.hiw-step.red {
+  background-color: #f43f5e;
+  color: white;
+}
+.hiw-step.blue {
+  background-color: #3b82f6;
+  color: white;
+}
+.hiw-step.green {
+  background-color: #22c55e;
+  color: white;
+}
+
+/* Icon bubble inside colored cards */
+.hiw-step.red .hiw-icon,
+.hiw-step.blue .hiw-icon,
+.hiw-step.green .hiw-icon {
+  background-color: white;
+  color: inherit;
+}
+
+.hiw-icon {
+  font-size: 2rem;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.hiw-step-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.hiw-step-desc {
+  font-size: 1rem;
+}
+
+.hiw-arrow {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hiw-arrow {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #3b82f6;
+    margin-top: 1rem;
+  }
+}
+
+.hiw-button-wrapper {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.hiw-button {
+  background-color: #2563eb;
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 2rem;
+  font-size: 1.125rem;
+  border: none;
+  border-radius: 9999px;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.hiw-button:hover {
+  background-color: #1d4ed8;
+}
