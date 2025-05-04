@@ -3,13 +3,11 @@ import mongoose from 'mongoose';
 const providerSchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true },
     email: { type: String, unique: true, required: true, lowercase: true, trim: true },
-    passwordHash: { type: String, required: true },
     phoneNumber: { type: String },
     profileImage: { type: String },
     description: { type: String },
     pricingModel: { type: String },      // e.g., 'hourly', 'fixed'
     availability: { type: Object },     // e.g., { mon: ['9:00','17:00'], ... }
-    approved: { type: Boolean, default: false },
     serviceTypes: [{ type: String }],   // e.g., ['Plumbing', 'Electrical']
     location: { type: String },
   }, { timestamps: true });
