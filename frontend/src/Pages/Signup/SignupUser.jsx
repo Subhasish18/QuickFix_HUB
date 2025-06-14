@@ -1,9 +1,10 @@
-// src/SignupUser.jsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import auth from "../../utils/Firebase";
-import axios from "axios";
+import Footer from '../UserLandingPage/Footer';
+import Navbar from './Navbar';
+import { FaUser, FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
 
 const SignupUser = () => {
   const [formData, setFormData] = useState({
@@ -12,7 +13,7 @@ const SignupUser = () => {
     password: ''
   });
 
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -21,13 +22,9 @@ const SignupUser = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      const firebaseUser = userCredential.user;
-
-      
-
+      await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       alert('User signed up successfully!');
-      navigate('/additional-details/user'); // Navigate to additional details page
+      navigate('/additional-details/user');
     } catch (err) {
       alert(err.message);
     }
@@ -36,43 +33,86 @@ const SignupUser = () => {
   const handleGoogleSignup = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      const firebaseUser = result.user;
-
+      await signInWithPopup(auth, provider);
       alert('User signed up successfully with Google!');
-      navigate('/additional-details/user'); // Navigate to additional details page
+      navigate('/additional-details/user');
     } catch (err) {
       alert(err.message);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <h2 className="text-2xl mb-4">User Signup</h2>
-      <form onSubmit={handleSubmit} className="flex flex-col space-y-4 w-80">
-        {['name', 'email', 'password'].map((field) => (
-          <input
-            key={field}
-            name={field}
-            type={field === 'password' ? 'password' : 'text'}
-            placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-            className="border p-2 rounded"
-            onChange={handleChange}
-            value={formData[field]}
-            required
-          />
-        ))}
-        <button type="submit" className="bg-blue-500 text-white p-2 rounded">
-          Sign Up
-        </button>
-      </form>
-      <button
-        onClick={handleGoogleSignup}
-        className="bg-red-500 text-white p-2 rounded mt-4"
-      >
-        Sign Up with Google
-      </button>
-    </div>
+    <>
+      <Navbar />
+      <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+        <div className="card shadow-lg border-0" style={{ maxWidth: 400, width: "100%" }}>
+          <div className="card-body p-4">
+            <h2 className="card-title text-center mb-4 text-primary fw-bold">Create Your Account</h2>
+            <form onSubmit={handleSubmit}>
+              <div className="mb-3">
+                <div className="input-group">
+                  <span className="input-group-text bg-white"><FaUser /></span>
+                  <input
+                    name="name"
+                    type="text"
+                    className="form-control"
+                    placeholder="Full Name"
+                    onChange={handleChange}
+                    value={formData.name}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="mb-3">
+                <div className="input-group">
+                  <span className="input-group-text bg-white"><FaEnvelope /></span>
+                  <input
+                    name="email"
+                    type="email"
+                    className="form-control"
+                    placeholder="Email Address"
+                    onChange={handleChange}
+                    value={formData.email}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="mb-3">
+                <div className="input-group">
+                  <span className="input-group-text bg-white"><FaLock /></span>
+                  <input
+                    name="password"
+                    type="password"
+                    className="form-control"
+                    placeholder="Password"
+                    onChange={handleChange}
+                    value={formData.password}
+                    required
+                  />
+                </div>
+              </div>
+              <button type="submit" className="btn btn-primary w-100 fw-semibold mb-3">
+                Sign Up
+              </button>
+            </form>
+            <div className="d-flex align-items-center my-3">
+              <hr className="flex-grow-1" />
+              <span className="mx-2 text-muted">or</span>
+              <hr className="flex-grow-1" />
+            </div>
+            <button
+              onClick={handleGoogleSignup}
+              className="btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2"
+              type="button"
+            >
+              <FaGoogle />
+              Sign Up with Google
+            </button>
+          </div>
+        </div>
+      </div>
+      <Footer />
+    </>
   );
 };
 
