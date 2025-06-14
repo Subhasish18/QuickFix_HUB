@@ -8,6 +8,8 @@ import {
 } from 'firebase/auth';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Footer from '../UserLandingPage/Footer';
+import Navbar from './Navbar';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -67,6 +69,9 @@ const Login = () => {
   };
 
   return (
+    <>
+      <Navbar />
+      <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
     <StyledWrapper>
       <form onSubmit={handleLogin} className="form">
         <div className="flex-column">
@@ -121,6 +126,9 @@ const Login = () => {
         </div>
       </form>
     </StyledWrapper>
+    </div>
+    <Footer />
+    </>
   );
 };
 
