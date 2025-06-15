@@ -1,0 +1,68 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  font-family: sans-serif;
+}
+
+.nav-logo {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: #0f172a; /* Slate-900 */
+}
+
+.nav-search {
+  display: flex;
+  align-items: center;
+  background: #f9fafb;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  width: 300px;
+}
+
+.nav-search input {
+  border: none;
+  background: transparent;
+  margin-left: 0.5rem;
+  outline: none;
+  width: 100%;
+  color: #1e293b;
+}
+
+.search-icon {
+  color: #94a3b8;
+  font-size: 1.1rem;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.nav-links a {
+  color: #0f172a;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.btn-outline {
+  padding: 0.4rem 1rem;
+  border: 1px solid #cbd5e1;
+  background: transparent;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.btn-solid {
+  padding: 0.4rem 1rem;
+  background: #0f172a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+}

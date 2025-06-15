@@ -4,8 +4,13 @@ import { FiSearch } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
+import { HashLink } from 'react-router-hash-link';
+
+import { Link, useNavigate } from 'react-router-dom';
+
 const Navbar = () => {
   const navigate = useNavigate();
+
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef();
@@ -59,6 +64,21 @@ const Navbar = () => {
       {/* Logo */}
       <div className="nav-logo">QuickFix_HUB</div>
 
+
+  return (
+    <nav className="navbar">
+      <div className="nav-logo py-2 px-3">
+        <span className="fw-bold quickfix" style={{ color: '#007bff' }}>
+          <Link to="/" className="navbar-home-link" style={{ color: '#007bff', textDecoration: 'none' }}>
+            QuickFix
+          </Link>
+        </span>
+        <span className="fw-semibold"><Link to="/" className="navbar-home-link" style={{ color: '#000000', textDecoration: 'none' }}>
+            Hub
+          </Link></span>
+      </div>
+
+
       {/* Search */}
       <div className="nav-search">
         <FiSearch className="search-icon" />
@@ -67,13 +87,24 @@ const Navbar = () => {
 
       {/* Right nav */}
       <div className="nav-links">
-        <a href="#">Browse Services</a>
-        <a href="#">Service Providers</a>
 
+        <HashLink smooth to="/#services">Browse Services</HashLink>
+        <HashLink smooth to="/#providers">Service Providers</HashLink>
         {!user ? (
           <>
-            <button className="btn-outline">Login</button>
-            <button className="btn-solid">Sign Up</button>
+             <button
+          className="btn-solid"
+          onClick={() => navigate('/login')}
+        >
+          Log in
+        </button>
+        <button
+          className="btn-solid"
+          onClick={() => navigate('/signup')}
+        >
+          Sign Up
+        </button>
+
           </>
         ) : (
           <>
@@ -122,6 +153,7 @@ const Navbar = () => {
             )}
           </>
         )}
+
       </div>
     </nav>
   );
