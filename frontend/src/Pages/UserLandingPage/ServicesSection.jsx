@@ -1,8 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import './ServicesSection.css';
+import { useNavigate } from 'react-router-dom';
 
 const ServicesSection = () => {
+  const navigate = useNavigate();
+
   const services = [
     { id: 1, name: 'Plumbing', description: 'Professional plumbing services for repairs and installations', icon: '🔧' },
     { id: 2, name: 'Electrical', description: 'Licensed electricians for all your electrical needs', icon: '⚡' },
@@ -11,6 +14,10 @@ const ServicesSection = () => {
     { id: 5, name: 'Painting', description: 'Quality painting services for interior and exterior', icon: '🖌️' },
     { id: 6, name: 'Carpentry', description: 'Custom woodwork and furniture repairs', icon: '🪚' }
   ];
+
+  const loadDetails = (serviceName) => {
+    navigate(`/serviceDetails/${serviceName}`);
+  };
 
   return (
     <section className="services-section">
@@ -40,7 +47,9 @@ const ServicesSection = () => {
               <div className="service-icon">{service.icon}</div>
               <h3 className="service-name">{service.name}</h3>
               <p className="service-description">{service.description}</p>
-              <button className="learn-more-btn">Learn More →</button>
+              <button onClick={() => loadDetails(service.name)} className="learn-more-btn">
+                Learn More →
+              </button>
             </motion.div>
           ))}
         </div>

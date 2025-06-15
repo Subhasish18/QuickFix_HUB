@@ -11,6 +11,7 @@ import User_details from './Pages/AdditionalDetails/User_details';
 import Provider_details from './Pages/AdditionalDetails/Provider_details';
 import ProtectedRoute from './utils/ProtectedRoute'; 
 import Hero from './Pages/ServiceLandingpages/Hero.jsx';
+import ServiceDetails from './Pages/ServiceDetail/ServiceDetails.jsx';
 
 
 const App = () => {
@@ -27,6 +28,7 @@ const App = () => {
         <Route path="/additional-details/user" element={<User_details />} />
         <Route path="/additional-details/provider" element={<Provider_details/>} /> 
         <Route path="/hero" element={<Hero />} />
+        <Route path='/serviceDetails/:serviceName' element={<ServiceDetails/>} />
       </Routes>
     </Router>
   );
