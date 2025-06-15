@@ -1,6 +1,9 @@
 import React from 'react';
 import './Navbar.css';
 import { FiSearch } from 'react-icons/fi';
+
+import { HashLink } from 'react-router-hash-link';
+
 import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
@@ -25,8 +28,10 @@ const Navbar = () => {
       </div>
 
       <div className="nav-links">
-        <a href="#">Browse Services</a>
-        <a href="#">Service Providers</a>
+
+        <HashLink smooth to="/#services">Browse Services</HashLink>
+        <HashLink smooth to="/#providers">Service Providers</HashLink>
+       
        <button
           className="btn-solid"
           onClick={() => navigate('/login')}
@@ -39,6 +44,7 @@ const Navbar = () => {
         >
           Sign Up
         </button>
+
       </div>
     </nav>
   );
