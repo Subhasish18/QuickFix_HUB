@@ -1,4 +1,5 @@
-const adminFirebase = require('../firebase');
+// backend/middleware/AuthMiddleware.js
+import adminFirebase from '../firebase.js';
 
 const verifyFirebaseToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -11,19 +12,11 @@ const verifyFirebaseToken = async (req, res, next) => {
 
   try {
     const decodedToken = await adminFirebase.auth().verifyIdToken(idToken);
-
-    // You can add role-based check here
-    if (decodedToken.role !== 'admin') {
-      return res.status(403).json({ message: 'Access denied: Not an admin' });
-    }
-
-    req.user = decodedToken;
+    req.user = decodedToken; // Store user info for next middleware/route
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Invalid Firebase token', error });
   }
 };
 
-module.exports = {
-  verifyFirebaseToken,
-};
+export { verifyFirebaseToken };

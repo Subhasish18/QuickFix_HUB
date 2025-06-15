@@ -66,3 +66,93 @@
   border-radius: 8px;
   font-weight: 500;
 }
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  background-color: #2c3e50;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 1rem;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.user-avatar:hover {
+  background-color: #34495e;
+}
+/* Circle avatar with initials */
+.user-avatar {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  background-color: #007bff;   /* Blue background */
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 50%;          /* Make it circular */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s;
+}
+.user-avatar:hover {
+  background-color: #0056b3;   /* Slightly darker on hover */
+}
+
+/* Dropdown box under avatar */
+.user-dropdown {
+  position: absolute;
+  top: 52px;                   /* Position just below the avatar */
+  right: 0;
+  padding: 0.8rem;
+  width: 200px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 100;
+  font-family: Arial, sans-serif;
+}
+
+/* Top section of dropdown with user info */
+.dropdown-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+}
+.dropdown-header strong {
+  display: block;
+  font-size: 14px;
+}
+.dropdown-header span {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* Individual menu links inside dropdown */
+.dropdown-link {
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: background-color 0.2s;
+}
+.dropdown-link:hover {
+  background-color: #f5f5f5;   /* Light hover effect */
+}
+
+/* Thin horizontal divider */
+.dropdown-divider {
+  height: 1px;
+  margin: 6px 0;
+  background-color: #eee;
+}
