@@ -7,6 +7,7 @@ import { connectDB } from './db.js';
 // Import route handlers
 import userDetailsRoute from './routes/userDetailsRoute.js';
 import providerDetailsRoute from './routes/providerDetailsRoute.js';
+import ProviderCardShowRoute from './routes/providercardshowRoute.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -19,6 +20,8 @@ app.use(bodyParser.json());
 // Define routes
 app.use('/api/user-details', userDetailsRoute);
 app.use('/api/provider-details', providerDetailsRoute);
+app.use('/api/provider-card-show', ProviderCardShowRoute);
+
 
 // Add MongoDB connection status debugging
 const startServer = async () => {

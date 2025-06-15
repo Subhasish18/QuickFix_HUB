@@ -34,7 +34,10 @@ const ProviderDetails = () => {
 
       const res = await axios.post('http://localhost:5000/api/provider-details', formattedData);
       alert(res.data.message);
-      navigate('/');
+      navigate('/', { replace: true });
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     } catch (err) {
       console.error('Error submitting provider details:', err);
       alert('Failed to submit provider details');
