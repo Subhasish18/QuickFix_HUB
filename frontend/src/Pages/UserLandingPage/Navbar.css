@@ -50,19 +50,46 @@
   text-decoration: none;
 }
 
+/* Make button-like links display as buttons */
+.btn-outline,
+.btn-solid {
+  display: inline-block;
+  cursor: pointer;
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.5;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+
 .btn-outline {
   padding: 0.4rem 1rem;
   border: 1px solid #cbd5e1;
   background: transparent;
   border-radius: 8px;
   font-weight: 500;
+  color: #0f172a;
+}
+
+.btn-outline:hover,
+.btn-outline:focus {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
+  outline: none;
 }
 
 .btn-solid {
   padding: 0.4rem 1rem;
   background: #0f172a;
-  color: white;
+  color: white !important;
   border: none;
   border-radius: 8px;
   font-weight: 500;
+}
+
+.btn-solid:hover,
+.btn-solid:focus {
+  background: #1e293b;
+  color: #fff;
+  outline: none;
 }
