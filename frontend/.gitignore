@@ -25,4 +25,4 @@ dist-ssr
 
 
 
-/backend/serviceAccountKey.json
+./backend/serviceAccountKey.json
