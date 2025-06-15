@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // For redirection
+import { getAuth } from 'firebase/auth'; // Firebase Authentication
 import Footer from '../UserLandingPage/Footer';
 import Navbar from './Navbar';
 
 const UserDetails = () => {
+  // State to store form input values
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -12,21 +14,51 @@ const UserDetails = () => {
     location: '',
   });
 
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Hook for redirection
 
+  // Update form data state on each input change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      const res = await axios.post('http://localhost:5000/api/user-details', formData);
+      // Step 1: Get current Firebase user
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      // If user is not logged in, stop here
+      if (!user) {
+        alert("You must be logged in to submit details.");
+        return;
+      }
+
+      // Step 2: Get Firebase ID token
+      const idToken = await user.getIdToken();
+
+      // Step 3: Send POST request with Authorization header
+      const res = await axios.post(
+        'http://localhost:5000/api/user-details',
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`, // Pass token to backend
+          },
+        }
+      );
+
+      // Success: Show message and redirect
       alert(res.data.message);
       navigate('/');
+
     } catch (err) {
       console.error('Error submitting user details:', err);
-      if (err.response && err.response.data && err.response.data.message) {
+
+      // Show specific backend error if available
+      if (err.response?.data?.message) {
         alert(err.response.data.message);
       } else {
         alert('Failed to submit user details. Please try again.');
