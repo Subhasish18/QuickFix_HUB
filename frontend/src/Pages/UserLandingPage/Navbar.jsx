@@ -6,11 +6,10 @@ import { HashLink } from 'react-router-hash-link';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
-  const navigate = useNavigate();
-
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef();
+  const navigate = useNavigate();
 
   // Utility to generate initials
   const getInitials = (user) => {

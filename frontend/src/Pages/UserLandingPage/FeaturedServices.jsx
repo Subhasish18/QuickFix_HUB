@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaStar, FaBuilding, FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaPlay, FaPause } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './FeaturedServices.css';
 
@@ -70,6 +71,7 @@ const hardcodedServices = [
 ];
 
 const FeaturedServices = () => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const [dynamicProviders, setDynamicProviders] = useState([]);
@@ -78,6 +80,11 @@ const FeaturedServices = () => {
   const servicesPerPage = 4; 
   const autoScrollInterval = useRef(null);
   const SCROLL_DELAY = 5000;
+  
+
+  const handleCardClick = (service) => {
+    navigate('/book', { state: { service } });
+  };
   
 
 
@@ -251,7 +258,18 @@ const FeaturedServices = () => {
       </div>
       <div className="services-grid">
         {currentServices.map((service, idx) => (
-          <div key={startIndex + idx} className="service-card" tabIndex="0">
+          <div 
+            key={startIndex + idx} 
+            className="service-card clickable" 
+            tabIndex="0"
+            onClick={() => handleCardClick(service)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                handleCardClick(service);
+              }
+            }}
+            style={{ cursor: 'pointer' }}
+          >
             <div className="service-image-container">
               <img src={service.image} alt={service.title} className="service-image" />
               <span className="service-category-badge">{service.category}</span>
