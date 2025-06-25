@@ -1,19 +1,14 @@
+// 🔄 Changed version
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getAuth } from 'firebase/auth';
 import Footer from '../UserLandingPage/Footer';
 import Navbar from './Navbar';
 
 const SERVICE_OPTIONS = [
-  "Plumbing",
-  "Electrical",
-  "Cleaning",
-  "Landscaping",
-  "Painting",
-  "Carpentry",
-  "Appliance Repair",
-  "Pest Control",
-  "Other"
+  "Plumbing", "Electrical", "Cleaning", "Landscaping", "Painting",
+  "Carpentry", "Appliance Repair", "Pest Control", "Other"
 ];
 
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -26,16 +21,15 @@ const ProviderDetails = () => {
     profileImage: '',
     description: '',
     pricingModel: '',
-    availability: {}, // Change to object
+    availability: {},
     serviceTypes: [],
     location: ''
   });
 
   const navigate = useNavigate();
 
-  // Handle all input changes except availability
   const handleChange = (e) => {
-    const { name, value, type, selectedOptions } = e.target;
+    const { name, value, selectedOptions } = e.target;
     if (name === "serviceTypes") {
       const values = Array.from(selectedOptions, option => option.value);
       setFormData({ ...formData, serviceTypes: values });
@@ -44,7 +38,6 @@ const ProviderDetails = () => {
     }
   };
 
-  // Handle availability changes
   const handleAvailabilityChange = (day, field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -60,30 +53,51 @@ const ProviderDetails = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      // Convert availability to the required format
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+
+      if (!currentUser) {
+        alert('You must be logged in to submit provider details.');
+        return;
+      }
+
+      const token = await currentUser.getIdToken();
+
       const formattedAvailability = {};
       for (const day of WEEKDAYS) {
         const dayData = formData.availability[day];
-        if (dayData && dayData.start && dayData.end) {
-          formattedAvailability[day.toLowerCase().slice(0,3)] = [dayData.start, dayData.end];
+        if (dayData?.start && dayData?.end) {
+          formattedAvailability[day.toLowerCase().slice(0, 3)] = [dayData.start, dayData.end];
         }
       }
+
       const formattedData = {
         ...formData,
         availability: formattedAvailability,
         serviceTypes: formData.serviceTypes
       };
 
-      const res = await axios.post('http://localhost:5000/api/provider-details', formattedData);
+      console.log('📤 Submitting provider data:', formattedData);
+
+      const res = await axios.post(
+        'http://localhost:5000/api/provider-details',
+        formattedData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
       alert(res.data.message);
       navigate('/', { replace: true });
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
+      setTimeout(() => window.location.reload(), 100);
+
     } catch (err) {
-      console.error('Error submitting provider details:', err);
-      alert('Failed to submit provider details');
+      console.error('❌ Error submitting provider details:', err);
+      alert(err.response?.data?.message || 'Failed to submit provider details. Please try again.');
     }
   };
 
@@ -96,67 +110,27 @@ const ProviderDetails = () => {
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
               <label className="form-label fw-bold">Name</label>
-              <input
-                name="name"
-                onChange={handleChange}
-                value={formData.name}
-                placeholder="Name"
-                required
-                className="form-control"
-              />
+              <input name="name" value={formData.name} onChange={handleChange} required className="form-control" placeholder="Name" />
             </div>
             <div className="mb-3">
               <label className="form-label fw-bold">Email</label>
-              <input
-                name="email"
-                type="email"
-                onChange={handleChange}
-                value={formData.email}
-                placeholder="Email"
-                required
-                className="form-control"
-              />
+              <input type="email" name="email" value={formData.email} onChange={handleChange} required className="form-control" placeholder="Email" />
             </div>
             <div className="mb-3">
               <label className="form-label fw-bold">Phone Number</label>
-              <input
-                name="phoneNumber"
-                onChange={handleChange}
-                value={formData.phoneNumber}
-                placeholder="Phone Number"
-                className="form-control"
-              />
+              <input name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} className="form-control" placeholder="Phone Number" />
             </div>
             <div className="mb-3">
               <label className="form-label fw-bold">Profile Image URL</label>
-              <input
-                name="profileImage"
-                onChange={handleChange}
-                value={formData.profileImage}
-                placeholder="Profile Image URL"
-                className="form-control"
-              />
+              <input name="profileImage" value={formData.profileImage} onChange={handleChange} className="form-control" placeholder="Profile Image URL" />
             </div>
             <div className="mb-3">
               <label className="form-label fw-bold">Description</label>
-              <textarea
-                name="description"
-                onChange={handleChange}
-                value={formData.description}
-                placeholder="Description"
-                rows="3"
-                className="form-control"
-              />
+              <textarea name="description" value={formData.description} onChange={handleChange} className="form-control" placeholder="Description" rows="3" />
             </div>
             <div className="mb-3">
               <label className="form-label fw-bold">Pricing Model</label>
-              <input
-                name="pricingModel"
-                onChange={handleChange}
-                value={formData.pricingModel}
-                placeholder="Pricing Model (e.g., hourly, fixed)"
-                className="form-control"
-              />
+              <input name="pricingModel" value={formData.pricingModel} onChange={handleChange} className="form-control" placeholder="Pricing Model (e.g., hourly, fixed)" />
             </div>
             <div className="mb-3">
               <label className="form-label fw-bold">Availability</label>
@@ -189,8 +163,8 @@ const ProviderDetails = () => {
               <select
                 name="serviceTypes"
                 multiple
-                onChange={handleChange}
                 value={formData.serviceTypes}
+                onChange={handleChange}
                 className="form-control"
                 style={{ height: "120px" }}
               >
@@ -202,17 +176,9 @@ const ProviderDetails = () => {
             </div>
             <div className="mb-4">
               <label className="form-label fw-bold">Location</label>
-              <input
-                name="location"
-                onChange={handleChange}
-                value={formData.location}
-                placeholder="Location"
-                className="form-control"
-              />
+              <input name="location" value={formData.location} onChange={handleChange} className="form-control" placeholder="Location" />
             </div>
-            <button type="submit" className="btn btn-primary w-100 fw-bold">
-              Submit Details
-            </button>
+            <button type="submit" className="btn btn-primary w-100 fw-bold">Submit Details</button>
           </form>
         </div>
       </div>

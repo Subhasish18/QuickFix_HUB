@@ -1,4 +1,3 @@
-import React from 'react';
 import './Navbar.css';
 import { FiSearch } from 'react-icons/fi';
 import { Link, useNavigate } from 'react-router-dom';

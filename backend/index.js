@@ -7,10 +7,7 @@ import { connectDB } from './db.js';
 // Import route handlers
 import userDetailsRoute from './routes/userDetailsRoute.js';
 import providerDetailsRoute from './routes/providerDetailsRoute.js';
-
 import ProviderCardShowRoute from './routes/providercardshowRoute.js';
-
-
 import serviceDetailsRoute from './routes/serviceDetailsRoute.js';
 import loginRoute from './routes/loginRoute.js';
 // Load environment variables from .env file
@@ -24,10 +21,7 @@ app.use(bodyParser.json());
 // Define routes
 app.use('/api/user-details', userDetailsRoute);
 app.use('/api/provider-details', providerDetailsRoute);
-
 app.use('/api/provider-card-show', ProviderCardShowRoute);
-
-
 
 app.use('/api/service-details', serviceDetailsRoute);
 app.use('/api/login', loginRoute);
@@ -37,7 +31,7 @@ const startServer = async () => {
   try {
     await connectDB();
     console.log('✅ MongoDB connection successful');
-    
+
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`✅ Server is running on http://localhost:${PORT}`);

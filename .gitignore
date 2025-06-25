@@ -1,4 +1,9 @@
+# Ignore all node_modules folders
+**/node_modules/
+
+# Ignore sensitive files
 backend/serviceAccountKey.json
 
-backend/node_modules
-
+node_modules/
+backend/node_modules/
+frontend/node_modules/

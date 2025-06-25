@@ -1,7 +1,10 @@
 import express from 'express';
 import User from '../model/User.js'; // Import the updated User model
 // userDetailsRoute.js
+import ServiceProvider from '../model/ServiceProvider.js';
 import { verifyFirebaseToken } from '../middleware/AuthMiddleware.js';
+
+
 const router = express.Router();
 
 // FIXED: POST route for creating/updating user details
@@ -23,6 +26,10 @@ router.post('/', verifyFirebaseToken, async (req, res) => {
       existingUser.email = email;
       existingUser.phoneNumber = phoneNumber;
       existingUser.location = location;
+      // Only update role if explicitly provided and user is admin
+      if (role && ['user'].includes(role)) {
+        existingUser.role = role;
+      }
       existingUser.updatedAt = new Date(); // ADDED: Track update time
 
       await existingUser.save();
@@ -39,20 +46,21 @@ router.post('/', verifyFirebaseToken, async (req, res) => {
       return res.status(400).json({ message: 'Name and email are required.' });
     }
 
-    // Create new user with Firebase UID
+    // Create new user with Firebase UID and default role
     const newUser = new User({
       firebaseUid, // Link Firebase UID to database record
       name,
       email,
       phoneNumber,
       location,
+      // role will automatically default to 'user' from schema
       createdAt: new Date(), // ADDED: Track creation time
       updatedAt: new Date()  // ADDED: Track update time
     });
   
     // Save the user to the database
     await newUser.save();
-    console.log('New user created successfully'); // ADDED: Success logging
+    console.log('New user created successfully',newUser); // ADDED: Success logging
   
     res.status(201).json({ // CHANGED: 201 for resource creation
       message: 'User details saved successfully!',
@@ -150,6 +158,7 @@ router.put('/edit', verifyFirebaseToken, async (req, res) => {
     user.phoneNumber = phoneNumber || ''; // ADDED: Handle empty strings
     user.location = location || ''; // ADDED: Handle empty strings
     user.profileImage = profileImage || ''; // ADDED: Handle empty strings
+    
     user.updatedAt = new Date(); // ADDED: Track update timestamp
 
     // Save the updated user in the database
@@ -168,6 +177,7 @@ router.put('/edit', verifyFirebaseToken, async (req, res) => {
         phoneNumber: user.phoneNumber,
         location: user.location,
         profileImage: user.profileImage,
+        role: user.role, // Include role in response
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
       }
@@ -189,5 +199,26 @@ router.put('/edit', verifyFirebaseToken, async (req, res) => {
     res.status(500).json({ message: 'Failed to update profile' });
   }
 });
+
+// ✅ Get role based on Firebase UID
+router.get('/role', verifyFirebaseToken, async (req, res) => {
+  try {
+    const firebaseUid = req.user.uid;
+
+    // First check if user is a regular user
+    const user = await User.findOne({ firebaseUid });
+    if (user) return res.status(200).json({ role: 'user' });
+
+    // Then check if user is a service provider
+    const provider = await ServiceProvider.findOne({ firebaseUid });
+    if (provider) return res.status(200).json({ role: 'provider' });
+
+    return res.status(404).json({ message: 'No matching user found.' });
+  } catch (error) {
+    console.error('Error in /role route:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 
 export default router;
