@@ -1,8 +1,13 @@
-// UserProfile.jsx
-import React from 'react';
-import './UserProfile.css';
+import React, { useState } from 'react';
+import { Card, Button } from 'react-bootstrap';
+import UserEditForm from '../UserEditForm/UserEditForm';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-const UserProfile = ({ user, onEditClick }) => {
+const UserProfile = ({ user, onEditSubmit }) => {
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  console.log('UserProfile rendered with user:', user); // Debug log
+
   const getInitials = (name) => {
     if (!name) return 'U';
     return name
@@ -23,76 +28,71 @@ const UserProfile = ({ user, onEditClick }) => {
   const initials = getInitials(user.name);
 
   return (
-    <div className="profile-container">
-      <div className="profile-header">
-        <div className="avatar-container">
-          <div className="avatar">
-            {user.profileImage ? (
-              <img 
-                src={user.profileImage} 
-                alt={`${user.name || 'User'}'s profile`}
-                className="avatar-img"
-              />
-            ) : (
-              initials
-            )}
-          </div>
-        </div>
-        <div className="user-info">
-          <h1 className="user-name">{user.name || 'No name available'}</h1>
-          <p className="member-since">Member since {createdAt}</p>
-          <button 
-            className="edit-btn"
-            onClick={onEditClick}
+    <>
+      <Card className="shadow-sm">
+        <Card.Header className="d-flex justify-content-between align-items-center">
+          <Card.Title as="h5" className="mb-0">User Profile</Card.Title>
+          <Button
+            variant="outline-primary"
+            size="sm"
+            onClick={() => {
+              console.log('Edit button clicked'); // Debug log
+              setShowEditModal(true);
+            }}
           >
-            Edit Profile
-          </button>
-        </div>
-      </div>
-
-      <div className="details">
-        <div className="section">
-          <h2 className="section-title">Contact Information</h2>
-          <div className="detail-grid">
-            <div className="detail-row">
-              <div className="detail-label">Email</div>
-              <div className="detail-value">{user.email || 'No email provided'}</div>
+            <i className="bi bi-pencil"></i> Edit
+          </Button>
+        </Card.Header>
+        <Card.Body>
+          <div className="d-flex align-items-center gap-3 mb-4">
+            <div className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style={{ width: '64px', height: '64px', fontSize: '1.5rem' }}>
+              {initials}
             </div>
-            <div className="detail-row">
-              <div className="detail-label">Phone</div>
-              <div className="detail-value">{user.phoneNumber || 'No phone number provided'}</div>
+            <div>
+              <h5 className="mb-1">{user.name || 'No name available'}</h5>
+              <p className="text-muted mb-0" style={{ fontSize: '0.875rem' }}>
+                Member since {createdAt}
+              </p>
             </div>
           </div>
-        </div>
 
-        <div className="section">
-          <h2 className="section-title">Personal Information</h2>
-          <div className="detail-grid">
-            <div className="detail-row">
-              <div className="detail-label">Location</div>
-              <div className="detail-value">{user.location || 'No location provided'}</div>
+          <div className="row g-3">
+            <div className="col-6">
+              <div className="bg-light p-3 rounded">
+                <span className="d-block fw-medium text-muted">Email</span>
+                <span className="fs-6">{user.email}</span>
+              </div>
             </div>
-          </div>
-        </div>
-
-        <div className="section">
-          <h2 className="section-title">Account Security</h2>
-          <div className="detail-grid">
-            <div className="detail-row">
-              <div className="detail-label">Password</div>
-              <div className="detail-value">
-                <button 
-                  className="password-btn"
-                  onClick={() => alert('Password change functionality would go here')}
-                >
-                  Change Password
-                </button>
+            <div className="col-6">
+              <div className="bg-light p-3 rounded">
+                <span className="d-block fw-medium text-muted">Phone</span>
+                <span className="fs-6">{user.phoneNumber || 'N/A'}</span>
+              </div>
+            </div>
+            <div className="col-12">
+              <div className="bg-light p-3 rounded">
+                <span className="d-block fw-medium text-muted">Location</span>
+                <span className="fs-6">{user.location || 'No location provided'}</span>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+        </Card.Body>
+      </Card>
+
+      <UserEditForm
+        show={showEditModal}
+        onHide={() => {
+          console.log('Modal closed'); // Debug log
+          setShowEditModal(false);
+        }}
+        user={user}
+        onSubmit={(updatedUser) => {
+          console.log('Edit form submitted with updatedUser:', updatedUser); // Debug log
+          setShowEditModal(false);
+          if (onEditSubmit) onEditSubmit(updatedUser);
+        }}
+      />
+    </>
   );
 };
 

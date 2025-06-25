@@ -6,7 +6,7 @@ import Footer from '../UserLandingPage/Footer';
 import Navbar from './Navbar';
 
 const UserDetails = () => {
-  // State to store form input values
+  // State to store form input values - removed role from state
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -40,9 +40,10 @@ const UserDetails = () => {
       const idToken = await user.getIdToken();
 
       // Step 3: Send POST request with Authorization header
+      // Role will automatically default to 'user' from backend schema
       const res = await axios.post(
         'http://localhost:5000/api/user-details',
-        formData,
+        formData, // Only sending name, email, phoneNumber, location
         {
           headers: {
             Authorization: `Bearer ${idToken}`, // Pass token to backend
