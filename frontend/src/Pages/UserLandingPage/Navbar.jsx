@@ -11,6 +11,7 @@ const Navbar = () => {
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef();
+  const navigate = useNavigate();
 
   // Store role and full profile if needed
   const [userData, setUserData] = useState(null);
@@ -93,6 +94,8 @@ const Navbar = () => {
         <span className="fw-semibold">
           <Link to="/" className="navbar-home-link" style={{ textDecoration: 'none' }}>
             Hub
+          </Link>
+        </span>
           </Link>
         </span>
       </div>
