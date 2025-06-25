@@ -136,7 +136,7 @@ const Navbar = () => {
                   } else if (userData?.role === 'provider') {
                     navigate('/hero', { state: { provider: userData } });
                   } else {
-                    alert("Role not identified.");
+                    alert("Role not identified.");0
                   }
                 }}>
                   View Profile
