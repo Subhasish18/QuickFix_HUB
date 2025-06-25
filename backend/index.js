@@ -12,7 +12,7 @@ import ProviderCardShowRoute from './routes/providercardshowRoute.js';
 
 
 import serviceDetailsRoute from './routes/serviceDetailsRoute.js';
-
+import loginRoute from './routes/loginRoute.js';
 // Load environment variables from .env file
 dotenv.config();
 
@@ -30,6 +30,7 @@ app.use('/api/provider-card-show', ProviderCardShowRoute);
 
 
 app.use('/api/service-details', serviceDetailsRoute);
+app.use('/api/login', loginRoute);
 
 // Add MongoDB connection status debugging
 const startServer = async () => {

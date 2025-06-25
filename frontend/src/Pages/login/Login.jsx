@@ -36,7 +36,7 @@ const Login = () => {
       });
 
       alert('Login successful!');
-      navigate('/dashboard');
+      navigate('/');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -60,7 +60,7 @@ const Login = () => {
       });
 
       alert('Signed in with Google!');
-      navigate('/dashboard');
+      navigate('/');
     } catch (error) {
       setError(error.message);
     } finally {
