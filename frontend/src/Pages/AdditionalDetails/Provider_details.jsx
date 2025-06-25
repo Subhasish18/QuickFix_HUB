@@ -4,6 +4,20 @@ import { useNavigate } from 'react-router-dom';
 import Footer from '../UserLandingPage/Footer';
 import Navbar from './Navbar';
 
+const SERVICE_OPTIONS = [
+  "Plumbing",
+  "Electrical",
+  "Cleaning",
+  "Landscaping",
+  "Painting",
+  "Carpentry",
+  "Appliance Repair",
+  "Pest Control",
+  "Other"
+];
+
+const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
 const ProviderDetails = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -12,24 +26,53 @@ const ProviderDetails = () => {
     profileImage: '',
     description: '',
     pricingModel: '',
-    availability: '',
-    serviceTypes: '',
+    availability: {}, // Change to object
+    serviceTypes: [],
     location: ''
   });
 
   const navigate = useNavigate();
 
+  // Handle all input changes except availability
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type, selectedOptions } = e.target;
+    if (name === "serviceTypes") {
+      const values = Array.from(selectedOptions, option => option.value);
+      setFormData({ ...formData, serviceTypes: values });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  // Handle availability changes
+  const handleAvailabilityChange = (day, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      availability: {
+        ...prev.availability,
+        [day]: {
+          ...prev.availability[day],
+          [field]: value
+        }
+      }
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Convert availability to the required format
+      const formattedAvailability = {};
+      for (const day of WEEKDAYS) {
+        const dayData = formData.availability[day];
+        if (dayData && dayData.start && dayData.end) {
+          formattedAvailability[day.toLowerCase().slice(0,3)] = [dayData.start, dayData.end];
+        }
+      }
       const formattedData = {
         ...formData,
-        availability: JSON.parse(formData.availability || '{}'),
-        serviceTypes: formData.serviceTypes.split(',').map(type => type.trim())
+        availability: formattedAvailability,
+        serviceTypes: formData.serviceTypes
       };
 
       const res = await axios.post('http://localhost:5000/api/provider-details', formattedData);
@@ -117,24 +160,45 @@ const ProviderDetails = () => {
             </div>
             <div className="mb-3">
               <label className="form-label fw-bold">Availability</label>
-              <textarea
-                name="availability"
-                onChange={handleChange}
-                value={formData.availability}
-                placeholder='Availability (e.g., {"mon": ["9:00", "17:00"], "tue": ["9:00", "17:00"]})'
-                rows="3"
-                className="form-control"
-              />
+              <div className="border rounded p-2 bg-white">
+                {WEEKDAYS.map(day => (
+                  <div key={day} className="d-flex align-items-center mb-2">
+                    <span style={{ width: 90 }}>{day}:</span>
+                    <input
+                      type="time"
+                      value={formData.availability[day]?.start || ""}
+                      onChange={e => handleAvailabilityChange(day, "start", e.target.value)}
+                      className="form-control form-control-sm mx-1"
+                      style={{ width: 110 }}
+                    />
+                    <span className="mx-1">to</span>
+                    <input
+                      type="time"
+                      value={formData.availability[day]?.end || ""}
+                      onChange={e => handleAvailabilityChange(day, "end", e.target.value)}
+                      className="form-control form-control-sm mx-1"
+                      style={{ width: 110 }}
+                    />
+                  </div>
+                ))}
+              </div>
+              <small className="text-muted">Set your available hours for each day.</small>
             </div>
             <div className="mb-3">
               <label className="form-label fw-bold">Service Types</label>
-              <input
+              <select
                 name="serviceTypes"
+                multiple
                 onChange={handleChange}
                 value={formData.serviceTypes}
-                placeholder="Service Types (comma-separated)"
                 className="form-control"
-              />
+                style={{ height: "120px" }}
+              >
+                {SERVICE_OPTIONS.map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+              <small className="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
             </div>
             <div className="mb-4">
               <label className="form-label fw-bold">Location</label>
@@ -155,5 +219,6 @@ const ProviderDetails = () => {
       <Footer />
     </>
   );
-  };
-  export default ProviderDetails;
+};
+
+export default ProviderDetails;

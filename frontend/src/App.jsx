@@ -13,7 +13,6 @@ import ProtectedRoute from './utils/ProtectedRoute';
 import Hero from './Pages/ServiceLandingpages/Hero.jsx';
 import ServiceDetails from './Pages/ServiceDetail/ServiceDetails.jsx';
 
-
 const App = () => {
   return (
     <Router>

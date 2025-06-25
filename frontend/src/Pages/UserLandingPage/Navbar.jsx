@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Navbar.css';
 import { FiSearch } from 'react-icons/fi';
-import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-
 import { HashLink } from 'react-router-hash-link';
-
 import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
@@ -28,8 +25,8 @@ const Navbar = () => {
     }
 
     if (user.email) {
-      const emailName = user.email.split('@')[0]; // "john.doe"
-      const emailParts = emailName.split(/[._]/); // split on . or _
+      const emailName = user.email.split('@')[0];
+      const emailParts = emailName.split(/[._]/);
       if (emailParts.length >= 2) {
         return (emailParts[0][0] + emailParts[1][0]).toUpperCase();
       }
@@ -62,22 +59,18 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       {/* Logo */}
-      <div className="nav-logo">QuickFix_HUB</div>
-
-
-  return (
-    <nav className="navbar">
       <div className="nav-logo py-2 px-3">
         <span className="fw-bold quickfix" style={{ color: '#007bff' }}>
           <Link to="/" className="navbar-home-link" style={{ color: '#007bff', textDecoration: 'none' }}>
             QuickFix
           </Link>
         </span>
-        <span className="fw-semibold"><Link to="/" className="navbar-home-link" style={{ color: '#000000', textDecoration: 'none' }}>
+        <span className="fw-semibold">
+          <Link to="/" className="navbar-home-link" style={{ color: '#000000', textDecoration: 'none' }}>
             Hub
-          </Link></span>
+          </Link>
+        </span>
       </div>
-
 
       {/* Search */}
       <div className="nav-search">
@@ -87,24 +80,22 @@ const Navbar = () => {
 
       {/* Right nav */}
       <div className="nav-links">
-
         <HashLink smooth to="/#services">Browse Services</HashLink>
         <HashLink smooth to="/#providers">Service Providers</HashLink>
         {!user ? (
           <>
-             <button
-          className="btn-solid"
-          onClick={() => navigate('/login')}
-        >
-          Log in
-        </button>
-        <button
-          className="btn-solid"
-          onClick={() => navigate('/signup')}
-        >
-          Sign Up
-        </button>
-
+            <button
+              className="btn-solid"
+              onClick={() => navigate('/login')}
+            >
+              Log in
+            </button>
+            <button
+              className="btn-solid"
+              onClick={() => navigate('/signup')}
+            >
+              Sign Up
+            </button>
           </>
         ) : (
           <>
@@ -153,7 +144,6 @@ const Navbar = () => {
             )}
           </>
         )}
-
       </div>
     </nav>
   );
