@@ -31,7 +31,7 @@ const Navbar = () => {
           className="btn-solid"
           onClick={() => navigate('/login')}
         >
-          Log in
+          Log In
         </button>
         <button
           className="btn-solid"
