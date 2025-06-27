@@ -6,7 +6,7 @@ import Navbar from './Navbar';
 import UpcomingJobsCard from './UpcomingJobs';
 import StatsCard from './StatsCard';
 import RatingsCard from './RatingsCard';
-import ProfileCard from './ProfileCard';
+// import ProfileCard from './ProfileCard';
 import JobRequestsCard from './JobRequestCard';
 import CompletedJobsCard from './CompletedJobsCard';
 
