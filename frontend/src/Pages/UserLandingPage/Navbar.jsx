@@ -7,7 +7,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const Navbar = () => {
-  const navigate = useNavigate();
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef();
@@ -18,15 +17,14 @@ const Navbar = () => {
 
   // Generate initials from display name or email
   const getInitials = () => {
-  const name = userData?.name || firebaseUser?.displayName || firebaseUser?.email;
-  if (!name) return 'U';
+    const name = userData?.name || firebaseUser?.displayName || firebaseUser?.email;
+    if (!name) return 'U';
 
-  const parts = name.trim().split(/[\s._@]+/); // handle names and emails
-  return parts.length >= 2
-    ? (parts[0][0] + parts[1][0]).toUpperCase()
-    : parts[0][0].toUpperCase();
+    const parts = name.trim().split(/[\s._@]+/); // handle names and emails
+    return parts.length >= 2
+      ? (parts[0][0] + parts[1][0]).toUpperCase()
+      : parts[0][0].toUpperCase();
   };
-
 
   // Fetch role and user/provider details
   const fetchUserData = async (firebaseToken) => {
@@ -96,8 +94,6 @@ const Navbar = () => {
             Hub
           </Link>
         </span>
-          </Link>
-        </span>
       </div>
 
       {/* Search Bar */}
@@ -123,7 +119,6 @@ const Navbar = () => {
               {getInitials()}
             </div>
 
-
             {/* Dropdown */}
             {open && (
               <div className="user-dropdown" ref={dropdownRef}>
@@ -139,7 +134,7 @@ const Navbar = () => {
                   } else if (userData?.role === 'provider') {
                     navigate('/hero', { state: { provider: userData } });
                   } else {
-                    alert("Role not identified.");0
+                    alert("Role not identified.");
                   }
                 }}>
                   View Profile
