@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { FaStar, FaBuilding, FaMapMarkerAlt } from 'react-icons/fa';
 import axios from 'axios';
 import './ServiceDetails.css';
@@ -8,8 +8,24 @@ const DEFAULT_IMAGE = "https://media.istockphoto.com/id/1516511531/photo/a-plumb
 
 const ServiceDetails = () => {
   const { serviceName } = useParams();
+  const navigate = useNavigate();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const handleCardClick = (service) => {
+    // Format the service data to match the structure expected by the booking page
+    const formattedService = {
+      title: service.name,
+      company: service.name,
+      location: service.location,
+      price: `$${service.pricingModel}/hr`,
+      rating: service.rating || 4.5,
+      category: serviceName,
+      image: service.profileImage && service.profileImage.trim() !== "" ? service.profileImage : DEFAULT_IMAGE,
+      description: service.description
+    };
+    navigate('/book', { state: { service: formattedService } });
+  };
 
   useEffect(() => {
     axios.get(`http://localhost:5000/api/service-details/${serviceName}`)
@@ -33,7 +49,18 @@ const ServiceDetails = () => {
       <h2 className="featured-title">{serviceName} Providers</h2>
       <div className="services-grid">
         {services.map((service, idx) => (
-          <div key={idx} className="service-card" tabIndex="0">
+          <div 
+            key={idx} 
+            className="service-card clickable" 
+            tabIndex="0"
+            onClick={() => handleCardClick(service)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                handleCardClick(service);
+              }
+            }}
+            style={{ cursor: 'pointer' }}
+          >
             <div className="service-image-container">
               <img
                 src={service.profileImage && service.profileImage.trim() !== "" ? service.profileImage : DEFAULT_IMAGE}
@@ -42,7 +69,7 @@ const ServiceDetails = () => {
                 onError={e => { e.target.onerror = null; e.target.src = DEFAULT_IMAGE; }}
               />
               <span className="service-category-badge">
-                {service.serviceTypes && service.serviceTypes.length > 0 ? service.serviceTypes[0] : 'Service'}
+                {service.serviceTypes && service.serviceTypes.length > 0 ? service.serviceTypes[0] : serviceName}
               </span>
             </div>
             <div className="service-content">
@@ -57,7 +84,10 @@ const ServiceDetails = () => {
               </p>
               <div className="service-divider"></div>
               <div className="service-footer">
-                <span className="service-price">{service.pricingModel}$/hr</span>
+                <span className="service-rating">
+                  <FaStar className="star-icon" /> {service.rating || 4.5}
+                </span>
+                <span className="service-price">${service.pricingModel}/hr</span>
               </div>
             </div>
           </div>
