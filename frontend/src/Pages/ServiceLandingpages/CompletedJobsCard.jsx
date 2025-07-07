@@ -1,6 +1,5 @@
-import React from 'react';
-import { Card, Badge } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { motion } from 'framer-motion';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const completedJobs = [
   {
@@ -35,63 +34,67 @@ const completedJobs = [
 const CompletedJobsCard = () => {
   const renderStars = (rating) => {
     return Array(5).fill(0).map((_, i) => (
-      <svg
+      <motion.svg
         key={i}
         xmlns="http://www.w3.org/2000/svg"
-        width="14"
-        height="14"
-        fill={i < rating ? '#ffc107' : '#e9ecef'}
-        className="bi bi-star-fill"
+        className="w-3 h-3 sm:w-4 sm:h-4"
+        fill={i < rating ? '#facc15' : '#e5e7eb'}
         viewBox="0 0 16 16"
+        whileHover={{ scale: 1.2 }}
+        transition={{ duration: 0.2 }}
       >
         <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-      </svg>
+      </motion.svg>
     ));
   };
 
   return (
-    <Card className="shadow-sm">
-      <Card.Header>
-        <Card.Title as="h5" className="mb-0">Recent Completed Jobs</Card.Title>
-      </Card.Header>
-      <Card.Body>
-        <div className="d-flex flex-column gap-3">
-          {completedJobs.map((job) => (
-            <div
+    <motion.div
+      className="bg-white/80 backdrop-blur-sm rounded-xl shadow-xl overflow-hidden"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="p-4 sm:p-6">
+        <motion.h2
+          className="text-xl sm:text-2xl font-bold text-indigo-900 mb-4"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          Recent Completed Jobs
+        </motion.h2>
+        <div className="flex flex-col gap-4">
+          {completedJobs.map((job, index) => (
+            <motion.div
               key={job.id}
-              className="d-flex justify-content-between align-items-start border-bottom pb-3"
-              style={{ borderBottom: job.id === completedJobs[completedJobs.length - 1].id ? 'none' : '' }}
+              className="pb-4 border-b border-gray-200 last:border-b-0"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.2 + index * 0.1 }}
+              whileHover={{ scale: 1.01 }}
             >
-              <div className="d-flex flex-column">
-                <div className="d-flex align-items-center gap-2">
-                  <Badge bg="success" className="d-flex align-items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="12"
-                      height="12"
-                      fill="currentColor"
-                      className="bi bi-check me-1"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
-                    </svg>
-                    Completed
-                  </Badge>
-                  <span className="text-muted" style={{ fontSize: '0.875rem' }}>{job.date}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start">
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 bg-green-500 text-white rounded-full text-sm flex items-center">
+                      <i className="bi bi-check me-1"></i>
+                      Completed
+                    </span>
+                    <span className="text-sm text-gray-600">{job.date}</span>
+                  </div>
+                  <h3 className="text-base font-semibold text-gray-800 mt-2">{job.type}</h3>
+                  <p className="text-sm text-gray-600 mb-1">{job.customer}</p>
+                  <div className="flex items-center gap-1">{renderStars(job.rating)}</div>
+                  <p className="text-sm italic text-gray-600 mt-1">"{job.feedback}"</p>
                 </div>
-                <h6 className="mt-2 mb-1">{job.type}</h6>
-                <p className="text-muted mb-1" style={{ fontSize: '0.875rem' }}>{job.customer}</p>
-                <div className="d-flex align-items-center gap-1">
-                  {renderStars(job.rating)}
-                </div>
-                <p className="fst-italic mt-1" style={{ fontSize: '0.75rem' }}>"{job.feedback}"</p>
+                <span className="text-base font-semibold text-green-600">{job.payment}</span>
               </div>
-              <span className="fw-semibold text-success">{job.payment}</span>
-            </div>
+            </motion.div>
           ))}
         </div>
-      </Card.Body>
-    </Card>
+      </div>
+    </motion.div>
   );
 };
 

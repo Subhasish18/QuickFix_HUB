@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Card, Button, Badge, Tabs, Tab } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const jobRequests = [
   {
@@ -37,6 +37,7 @@ const jobRequests = [
 
 const JobRequestsCard = () => {
   const [requests, setRequests] = useState(jobRequests);
+  const [activeTab, setActiveTab] = useState('pending');
 
   const acceptJob = (jobId) => {
     setRequests(prevRequests =>
@@ -60,112 +61,170 @@ const JobRequestsCard = () => {
   const acceptedRequests = requests.filter(job => job.status === "accepted");
 
   return (
-    <Card className="shadow-sm">
-      <Card.Header>
-        <Card.Title as="h5" className="mb-0">Job Requests</Card.Title>
-        <Card.Text className="text-muted" style={{ fontSize: '0.875rem' }}>
+    <motion.div
+      className="bg-white/80 backdrop-blur-sm rounded-xl shadow-xl overflow-hidden"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="p-4 sm:p-6">
+        <motion.h2
+          className="text-xl sm:text-2xl font-bold text-indigo-900 mb-2"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          Job Requests
+        </motion.h2>
+        <motion.p
+          className="text-xs sm:text-sm text-gray-600 mb-4"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
           Manage your incoming service requests
-        </Card.Text>
-      </Card.Header>
-      <Card.Body>
-        <Tabs defaultActiveKey="pending" id="job-requests-tabs" className="mb-3">
-          <Tab
-            eventKey="pending"
-            title={
-              <span>
-                Pending
-                {pendingRequests.length > 0 && (
-                  <Badge bg="secondary" className="ms-2">
-                    {pendingRequests.length}
-                  </Badge>
-                )}
-              </span>
-            }
-          >
-            <div className="d-flex flex-column gap-3">
-              {pendingRequests.length > 0 ? (
-                pendingRequests.map((job) => (
-                  <div key={job.id} className="border rounded p-3">
-                    <div className="d-flex justify-content-between align-items-start">
-                      <div>
-                        <h6 className="mb-1">{job.type}</h6>
-                        <p className="text-muted mb-0" style={{ fontSize: '0.875rem' }}>{job.customer}</p>
-                      </div>
-                      <Badge bg="primary">{job.date}</Badge>
-                    </div>
-                    <p className="mt-2 mb-0" style={{ fontSize: '0.875rem' }}>{job.description}</p>
-                    <p className="text-muted mt-1" style={{ fontSize: '0.875rem' }}>{job.address}</p>
-                    <p className="text-muted mt-1" style={{ fontSize: '0.75rem' }}>Time: {job.time}</p>
-                    <div className="d-flex gap-2 mt-3">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => acceptJob(job.id)}
-                      >
-                        Accept
-                      </Button>
-                      <Button
-                        variant="outline-secondary"
-                        size="sm"
-                        onClick={() => declineJob(job.id)}
-                      >
-                        Decline
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-4">
-                  <p className="text-muted">No pending requests</p>
-                </div>
+        </motion.p>
+        <div className="flex flex-wrap gap-2 sm:gap-4 mb-4">
+          {[
+            { key: 'pending', label: 'Pending', count: pendingRequests.length },
+            { key: 'accepted', label: 'Accepted', count: acceptedRequests.length },
+          ].map((tab) => (
+            <motion.button
+              key={tab.key}
+              className={`px-4 py-2 rounded-lg font-medium text-xs sm:text-sm flex items-center gap-2 ${
+                activeTab === tab.key
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800'
+              }`}
+              onClick={() => setActiveTab(tab.key)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {tab.label}
+              {tab.count > 0 && (
+                <span className="px-2 py-1 bg-gray-200 text-gray-800 rounded-full text-xs sm:text-sm">
+                  {tab.count}
+                </span>
               )}
-            </div>
-          </Tab>
-          
-          <Tab
-            eventKey="accepted"
-            title={
-              <span>
-                Accepted
-                {acceptedRequests.length > 0 && (
-                  <Badge bg="secondary" className="ms-2">
-                    {acceptedRequests.length}
-                  </Badge>
-                )}
-              </span>
-            }
+            </motion.button>
+          ))}
+        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
           >
-            <div className="d-flex flex-column gap-3">
-              {acceptedRequests.length > 0 ? (
-                acceptedRequests.map((job) => (
-                  <div key={job.id} className="border rounded p-3">
-                    <div className="d-flex justify-content-between align-items-start">
-                      <div>
-                        <h6 className="mb-1">{job.type}</h6>
-                        <p className="text-muted mb-0" style={{ fontSize: '0.875rem' }}>{job.customer}</p>
+            {activeTab === 'pending' && (
+              <div className="flex flex-col gap-4">
+                {pendingRequests.length > 0 ? (
+                  pendingRequests.map((job, index) => (
+                    <motion.div
+                      key={job.id}
+                      className="bg-indigo-50 p-4 rounded-lg"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
+                      whileHover={{ scale: 1.02 }}
+                    >
+                      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start mb-2">
+                        <h3 className="text-base font-semibold text-gray-800">{job.type}</h3>
+                        <span className="px-3 py-1 bg-indigo-600 text-white rounded-full text-xs sm:text-sm">
+                          {job.date}
+                        </span>
                       </div>
-                      <Badge bg="success">{job.date}</Badge>
-                    </div>
-                    <p className="mt-2 mb-0" style={{ fontSize: '0.875rem' }}>{job.description}</p>
-                    <p className="text-muted mt-1" style={{ fontSize: '0.875rem' }}>{job.address}</p>
-                    <p className="text-muted mt-1" style={{ fontSize: '0.75rem' }}>Time: {job.time}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-4">
-                  <p className="text-muted">No accepted jobs</p>
-                </div>
-              )}
-            </div>
-          </Tab>
-        </Tabs>
-      </Card.Body>
-      <Card.Footer className="border-top p-3">
-        <Button variant="outline-secondary" className="w-100">
-          View All Requests
-        </Button>
-      </Card.Footer>
-    </Card>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-1">{job.customer}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-1">{job.description}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-1">{job.address}</p>
+                      <p className="text-xs text-gray-600">Time: {job.time}</p>
+                      <div className="flex flex-col sm:flex-row gap-3 mt-3">
+                        <motion.button
+                          className="px-4 py-2 sm:px-6 sm:py-2 bg-indigo-600 text-white rounded-lg"
+                          onClick={() => acceptJob(job.id)}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Accept
+                        </motion.button>
+                        <motion.button
+                          className="px-4 py-2 sm:px-6 sm:py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-indigo-100 hover:text-indigo-800"
+                          onClick={() => declineJob(job.id)}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Decline
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <motion.div
+                    className="text-center py-4 text-gray-600 text-xs sm:text-sm"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    No pending requests
+                  </motion.div>
+                )}
+              </div>
+            )}
+            {activeTab === 'accepted' && (
+              <div className="flex flex-col gap-4">
+                {acceptedRequests.length > 0 ? (
+                  acceptedRequests.map((job, index) => (
+                    <motion.div
+                      key={job.id}
+                      className="bg-indigo-50 p-4 rounded-lg"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
+                      whileHover={{ scale: 1.02 }}
+                    >
+                      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start mb-2">
+                        <h3 className="text-base font-semibold text-gray-800">{job.type}</h3>
+                        <span className="px-3 py-1 bg-green-500 text-white rounded-full text-xs sm:text-sm">
+                          {job.date}
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-1">{job.customer}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-1">{job.description}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-1">{job.address}</p>
+                      <p className="text-xs text-gray-600">Time: {job.time}</p>
+                    </motion.div>
+                  ))
+                ) : (
+                  <motion.div
+                    className="text-center py-4 text-gray-600 text-xs sm:text-sm"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    No accepted jobs
+                  </motion.div>
+                )}
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+        <motion.div
+          className="mt-4 pt-4 border-t border-gray-200"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.4 }}
+        >
+          <motion.button
+            className="w-full px-4 py-2 sm:px-6 sm:py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-indigo-100 hover:text-indigo-800"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            View All Requests
+          </motion.button>
+        </motion.div>
+      </div>
+    </motion.div>
   );
 };
 

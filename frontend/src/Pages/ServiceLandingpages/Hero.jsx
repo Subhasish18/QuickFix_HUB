@@ -1,106 +1,123 @@
-import React, { useEffect, useState } from 'react';
-import { getAuth, onAuthStateChanged } from 'firebase/auth'; // ✅ fixed missing import
-import axios from 'axios';
-
-import Navbar from './Navbar';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Navbar from '../UserLandingPage/Navbar';
 import UpcomingJobsCard from './UpcomingJobs';
 import StatsCard from './StatsCard';
 import RatingsCard from './RatingsCard';
-// import ProfileCard from './ProfileCard';
+import ProviderProfileCard from './ProviderProfileCard';
 import JobRequestsCard from './JobRequestCard';
 import CompletedJobsCard from './CompletedJobsCard';
-
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Hero = () => {
-  const [provider, setProvider] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('profile');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // ✅ Wait for Firebase Auth to resolve before fetching provider
-  useEffect(() => {
-    const auth = getAuth();
+  const tabs = [
+    { key: 'profile', label: 'Profile & Ratings', icon: 'bi-person' },
+    { key: 'stats', label: 'Stats', icon: 'bi-bar-chart' },
+    { key: 'jobRequests', label: 'Job Requests', icon: 'bi-inbox' },
+    { key: 'upcomingJobs', label: 'Upcoming Jobs', icon: 'bi-calendar-event' },
+    { key: 'completedJobs', label: 'Completed Jobs', icon: 'bi-check-circle' },
+  ];
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        setError('Unable to load provider data. Please log in again.');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const token = await user.getIdToken();
-        const res = await axios.get('http://localhost:5000/api/provider-details/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        setProvider(res.data);
-      } catch (err) {
-        console.error('❌ Error fetching provider:', err);
-        setError('Unable to load provider data. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    });
-
-    return () => unsubscribe(); // ✅ cleanup auth listener
-  }, []);
-
-  const handleProviderUpdate = (updatedProvider) => {
-    setProvider(updatedProvider);
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'profile':
+        return (
+          <div className="d-flex flex-column gap-4">
+            <ProviderProfileCard />
+            <RatingsCard />
+          </div>
+        );
+      case 'stats':
+        return <StatsCard />;
+      case 'jobRequests':
+        return <JobRequestsCard />;
+      case 'upcomingJobs':
+        return <UpcomingJobsCard />;
+      case 'completedJobs':
+        return <CompletedJobsCard />;
+      default:
+        return (
+          <div className="d-flex flex-column gap-4">
+            <ProviderProfileCard />
+            <RatingsCard />
+          </div>
+        );
+    }
   };
 
-  if (loading) {
-    return (
-      <div className="bg-light min-vh-100">
-        <Navbar />
-        <div className="container py-5 text-center">
-          <h4>Loading your dashboard...</h4>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !provider) {
-    return (
-      <div className="bg-light min-vh-100">
-        <Navbar />
-        <div className="container py-5 text-center">
-          <h2 className="text-danger">{error || 'No provider data found.'}</h2>
-          <p>Please log in and access your dashboard from the correct flow.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-light">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <Navbar />
-      <div className="container py-4">
-        <h1 className="h2 fw-bold mb-4">Service Provider Dashboard</h1>
-        <div className="row g-4">
-          <div className="col-12 col-md-4">
-            <div className="d-flex flex-column gap-4">
-              <ProfileCard
-                provider={provider}
-                onProviderUpdate={handleProviderUpdate}
-              />
-              <StatsCard provider={provider} />
+      <div className="container-fluid py-6 px-4 sm:px-6 lg:px-8">
+        <motion.h1
+          className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 text-indigo-900 text-center lg:text-left"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+        </motion.h1>
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Sidebar */}
+          <motion.div
+            className={`lg:w-64 bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-4 ${
+              isSidebarOpen ? 'block' : 'hidden lg:block'
+            }`}
+            initial={{ x: -100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="flex flex-col gap-2">
+              {tabs.map((tab) => (
+                <motion.button
+                  key={tab.key}
+                  className={`flex items-center w-full px-4 py-3 rounded-lg font-medium text-sm sm:text-base text-left transition-all duration-300 ${
+                    activeTab === tab.key
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-700 hover:bg-indigo-100 hover:text-indigo-800'
+                  }`}
+                  onClick={() => {
+                    setActiveTab(tab.key);
+                    setIsSidebarOpen(false); // Close sidebar on mobile after selection
+                  }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  role="tab"
+                  aria-selected={activeTab === tab.key}
+                >
+                  <i className={`bi ${tab.icon} me-2`}></i>
+                  {tab.label}
+                </motion.button>
+              ))}
             </div>
-          </div>
-          <div className="col-12 col-md-4">
-            <div className="d-flex flex-column gap-4">
-              <JobRequestsCard provider={provider} />
-              <UpcomingJobsCard provider={provider} />
-            </div>
-          </div>
-          <div className="col-12 col-md-4">
-            <div className="d-flex flex-column gap-4">
-              <CompletedJobsCard provider={provider} />
-              <RatingsCard provider={provider} />
-            </div>
+          </motion.div>
+
+          {/* Mobile Sidebar Toggle Button */}
+          <button
+            className="lg:hidden mb-4 px-4 py-2 bg-indigo-600 text-white rounded-lg flex items-center justify-center"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          >
+            <i className={`bi ${isSidebarOpen ? 'bi-x' : 'bi-list'} me-2`}></i>
+            {isSidebarOpen ? 'Close Menu' : 'Menu'}
+          </button>
+
+          {/* Content Area */}
+          <div className="flex-1">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                className="card shadow-xl bg-white/80 backdrop-blur-sm rounded-xl overflow-hidden"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="card-body p-4 sm:p-6">{renderContent()}</div>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </div>
