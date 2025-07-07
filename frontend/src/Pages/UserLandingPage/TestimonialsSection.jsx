@@ -73,10 +73,6 @@ const TestimonialsSection = () => {
             </div>
           ))}
         </div>
-
-        <div className="read-more">
-          <a href="#">Read more reviews →</a>
-        </div>
       </div>
     </section>
   );

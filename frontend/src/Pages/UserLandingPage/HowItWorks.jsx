@@ -61,21 +61,6 @@ const HowItWorks = () => {
             </motion.div>
           ))}
         </div>
-
-        <motion.div
-          className="hiw-button-wrapper"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
-        >
-          <motion.button
-            className="hiw-button"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            Get Started Now
-          </motion.button>
-        </motion.div>
       </div>
     </section>
   );
