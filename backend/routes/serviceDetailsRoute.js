@@ -8,7 +8,7 @@ console.log('ServiceDetails route initialized');
 router.get('/:serviceName', async (req, res) => {
   try {
     const { serviceName } = req.params;
-    console.log(`Fetching providers for service: ${serviceName}`);
+    console.log(`Fetching providers for service: ${serviceName} `);
     // Find providers where serviceTypes array contains the serviceName (case-insensitive)
     const providers = await ServiceProvider.find({
       serviceTypes: { $regex: new RegExp(serviceName, 'i') }

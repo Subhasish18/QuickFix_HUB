@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
-import Navbar from './Navbar'
-import Footer from './Footer'
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import Navbar from './Navbar';
+import Footer from './Footer';
 import StatsCard from './StatsCard';
 import RatingsCard from './RatingsCard';
 import ProfileCard from './ProfileCard';
@@ -9,10 +9,13 @@ import BookingForm from './BookingForm';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-
 const BookPage = () => {
   const location = useLocation();
   const selectedService = location.state?.service;
+  const serviceId = location.state?.serviceId || selectedService?.serviceId || selectedService?.id;
+
+  // Example: get userId from localStorage (adjust as needed)
+  const userId = localStorage.getItem('userId');
 
   // Scroll to top on mount
   useEffect(() => {
@@ -41,7 +44,11 @@ const BookPage = () => {
             </div>
           </div>
           <div className="col-12 col-md-4">
-            <BookingForm />
+            {/* Pass serviceId and userId as props */}
+            <BookingForm 
+              serviceId={serviceId} 
+              userId={userId} 
+            />
           </div>
           <div className="col-12 col-md-4">
             <div className="d-flex flex-column gap-4">
@@ -52,7 +59,7 @@ const BookPage = () => {
       </div>
       <Footer />
     </>
-  )
+  );
 }
 
-export default BookPage
+export default BookPage;
