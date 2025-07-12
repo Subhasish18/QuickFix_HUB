@@ -29,11 +29,11 @@ const Login = () => {
       const user = userCredential.user;
       const idToken = await user.getIdToken();
 
-      await axios.post('http://localhost:5000/api/login', {}, {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
+      // Store user id in localStorage
+      const response = await axios.post('http://localhost:5000/api/login', {}, {
+        headers: { Authorization: `Bearer ${idToken}` },
       });
+      localStorage.setItem('userId', response.data.user.id);
 
       alert('Login successful!');
       navigate('/');
@@ -52,6 +52,9 @@ const Login = () => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const idToken = await user.getIdToken();
+
+      // Store user id in localStorage
+      localStorage.setItem('userId', user.uid);
 
       await axios.post('http://localhost:5000/api/login', {}, {
         headers: {

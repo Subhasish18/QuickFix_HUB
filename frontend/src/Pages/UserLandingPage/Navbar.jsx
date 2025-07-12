@@ -147,6 +147,7 @@ const Navbar = () => {
                   auth.signOut().then(() => {
                     setFirebaseUser(null);
                     setUserData(null);
+                    localStorage.removeItem('userId'); // Remove userId on logout
                     navigate('/');
                   });
                 }}>

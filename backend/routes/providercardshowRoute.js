@@ -27,7 +27,6 @@ router.get('/', async (req, res) => {
         price: provider.pricingModel || 'Contact for pricing'
       }]
     }));
-
     // Send the formatted result as a success response
     res.status(200).json(formattedProviders);
   } catch (error) {

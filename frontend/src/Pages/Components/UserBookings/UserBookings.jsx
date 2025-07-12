@@ -1,78 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import './UserBookings.css';
 
-const UserBookings = ({ userId }) => {
+const UserBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('all');
 
+  // Get userId from localStorage
+  const userId = localStorage.getItem('userId');
+
   useEffect(() => {
     const fetchBookings = async () => {
       try {
         setLoading(true);
+        setError(null);
 
-        // 🛠️ Future Backend Integration Point:
-        // const response = await fetch(`/api/users/${userId}/bookings`);
-        // const data = await response.json();
-        // setBookings(data);
+        // Debug logs
+        console.log('UserBookings: userId from localStorage:', userId);
 
-        // 🔧 Mock data (to be replaced with real API later)
-        const mockBookings = [
-          {
-            id: 'b1',
-            serviceId: 's1',
-            serviceName: 'Plumbing Repair',
-            providerName: 'John Smith',
-            date: '2025-05-10T14:00:00',
-            status: 'confirmed',
-            price: 85,
-            address: '123 Main St, Anytown',
-          },
-          {
-            id: 'b2',
-            serviceId: 's2',
-            serviceName: 'House Cleaning',
-            providerName: 'Clean Team Inc.',
-            date: '2025-05-15T10:00:00',
-            status: 'pending',
-            price: 120,
-            address: '123 Main St, Anytown',
-          },
-          {
-            id: 'b3',
-            serviceId: 's3',
-            serviceName: 'Electrical Wiring',
-            providerName: 'Sparky Electric',
-            date: '2025-04-25T09:30:00',
-            status: 'completed',
-            price: 150,
-            address: '123 Main St, Anytown',
-          },
-          {
-            id: 'b4',
-            serviceId: 's4',
-            serviceName: 'Lawn Mowing',
-            providerName: 'Green Thumb Gardens',
-            date: '2025-04-20T13:00:00',
-            status: 'cancelled',
-            price: 45,
-            address: '123 Main St, Anytown',
-          }
-        ];
+        const url = `http://localhost:5000/api/user-bookings/user/${userId}`;
+        console.log('UserBookings: Fetching from URL:', url);
 
-        setTimeout(() => {
-          setBookings(mockBookings);
-          setLoading(false);
-        }, 800);
+        const response = await fetch(url);
+        console.log('UserBookings: Response status:', response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('UserBookings: Error response text:', errorText);
+          throw new Error('Failed to fetch bookings');
+        }
+        const data = await response.json();
+        console.log('UserBookings: Data received:', data);
+
+        setBookings(data.bookings || []);
+        setLoading(false);
       } catch (err) {
         setError('Failed to load bookings');
         setLoading(false);
-        console.error('Error fetching bookings:', err);
+        console.error('UserBookings: Error fetching bookings:', err);
       }
     };
 
-    fetchBookings();
+    if (userId) {
+      fetchBookings();
+    } else {
+      console.warn('UserBookings: No userId found in localStorage');
+    }
   }, [userId]);
 
   const formatDate = (dateString) => {
@@ -99,9 +73,9 @@ const UserBookings = ({ userId }) => {
   };
 
   const renderBookingCard = (booking) => (
-    <div key={booking.id} className="booking-card">
+    <div key={booking._id} className="booking-card">
       <div className="booking-header">
-        <h3>{booking.serviceName}</h3>
+        <h3>{booking.serviceDetails || booking.serviceName}</h3>
         <span className={`booking-status ${getStatusClassName(booking.status)}`}>
           {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
         </span>
@@ -111,20 +85,26 @@ const UserBookings = ({ userId }) => {
         <div className="booking-info">
           <div className="info-row">
             <span className="info-label">Provider:</span>
-            <span className="info-value">{booking.providerName}</span>
+            <span className="info-value">
+              {booking.serviceId?.name  || booking.providerName || '-'}
+            </span>
           </div>
           <div className="info-row">
             <span className="info-label">Date & Time:</span>
-            <span className="info-value">{formatDate(booking.date)}</span>
+            <span className="info-value">{formatDate(booking.scheduledTime || booking.date)}</span>
           </div>
           <div className="info-row">
             <span className="info-label">Location:</span>
-            <span className="info-value">{booking.address}</span>
+            <span className="info-value">
+              {booking.serviceId?.location || booking.address || '-'}
+            </span>
           </div>
           <div className="info-row">
             <span className="info-label">Price:</span>
             <span className="info-value">
-              ${typeof booking.price === 'number' ? booking.price.toFixed(2) : 'N/A'}
+              {booking.price
+                ? `$${typeof booking.price === 'number' ? booking.price.toFixed(2) : booking.price}`
+                : (booking.serviceId?.pricingModel ? `$${booking.serviceId.pricingModel}/hr` : 'N/A')}
             </span>
           </div>
         </div>
@@ -133,30 +113,30 @@ const UserBookings = ({ userId }) => {
       <div className="booking-actions">
         {booking.status === 'pending' && (
           <>
-            <button onClick={() => alert(`Cancel booking ${booking.id}`)} className="cancel-booking-button">
+            <button onClick={() => alert(`Cancel booking ${booking._id}`)} className="cancel-booking-button">
               Cancel
             </button>
-            <button onClick={() => alert(`Reschedule booking ${booking.id}`)} className="reschedule-button">
+            <button onClick={() => alert(`Reschedule booking ${booking._id}`)} className="reschedule-button">
               Reschedule
             </button>
           </>
         )}
         {booking.status === 'confirmed' && (
           <>
-            <button onClick={() => alert(`Cancel booking ${booking.id}`)} className="cancel-booking-button">
+            <button onClick={() => alert(`Cancel booking ${booking._id}`)} className="cancel-booking-button">
               Cancel
             </button>
-            <button onClick={() => alert(`Contacting ${booking.providerName}`)} className="contact-provider-button">
+            <button onClick={() => alert(`Contacting provider`)} className="contact-provider-button">
               Contact Provider
             </button>
           </>
         )}
         {booking.status === 'completed' && (
-          <button onClick={() => alert(`Leave review for ${booking.serviceName}`)} className="review-button">
+          <button onClick={() => alert(`Leave review for booking`)} className="review-button">
             Leave Review
           </button>
         )}
-        <button onClick={() => alert(`Viewing details for booking ${booking.id}`)} className="details-button">
+        <button onClick={() => alert(`Viewing details for booking ${booking._id}`)} className="details-button">
           View Details
         </button>
       </div>
