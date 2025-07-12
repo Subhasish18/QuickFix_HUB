@@ -15,8 +15,10 @@ const ServiceDetails = () => {
   const [loading, setLoading] = useState(true);
 
   const handleCardClick = (service) => {
-    // Format the service data to match the structure expected by the booking page
+    // Pass the correct serviceId for booking
     const formattedService = {
+      id: service._id,
+      serviceId: service._id, // <-- add this line for clarity
       title: service.name,
       company: service.name,
       location: service.location,
@@ -26,7 +28,8 @@ const ServiceDetails = () => {
       image: service.profileImage && service.profileImage.trim() !== "" ? service.profileImage : DEFAULT_IMAGE,
       description: service.description
     };
-    navigate('/book', { state: { service: formattedService } });
+    // Pass serviceId separately in navigation state
+    navigate('/book', { state: { service: formattedService, serviceId: service._id } });
   };
 
   useEffect(() => {
