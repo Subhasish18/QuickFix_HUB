@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // For redirection
 import { getAuth } from 'firebase/auth'; // Firebase Authentication
 import Footer from '../UserLandingPage/Footer';
-import Navbar from './Navbar';
+import Navbar from '../UserLandingPage/Navbar';
 
 const UserDetails = () => {
   // State to store form input values - removed role from state

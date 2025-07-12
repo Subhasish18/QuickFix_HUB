@@ -1,19 +1,24 @@
 import mongoose from 'mongoose';
 
 const reviewSchema = new mongoose.Schema({
-    serviceId: {
+    providerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Service',
+      ref: 'ServiceProvider',
       required: true
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true
+      required: false 
     },
-    rating:  { type: Number, min: 1, max: 5, required: true },
-    comment: { type: String },
-    approved: { type: Boolean, default: false }
+    userFirebaseUid: {
+      type: String,
+      required: false 
+    },
+    rating: { type: Number, min: 1, max: 5, required: true },
+    comment: { type: String, required: true },
+    approved: { type: Boolean, default: true },
+    isAnonymous: { type: Boolean, default: true }
   }, { timestamps: true });
   
    const Review = mongoose.model('Review', reviewSchema);

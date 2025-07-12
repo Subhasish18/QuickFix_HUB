@@ -8,7 +8,7 @@ import ProviderProfileCard from './ProviderProfileCard';
 import JobRequestsCard from './JobRequestCard';
 import CompletedJobsCard from './CompletedJobsCard';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
+// Removed Bootstrap CSS to avoid conflicts with Tailwind
 
 const Hero = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -26,7 +26,7 @@ const Hero = () => {
     switch (activeTab) {
       case 'profile':
         return (
-          <div className="d-flex flex-column gap-4">
+          <div className="flex flex-col gap-4">
             <ProviderProfileCard />
             <RatingsCard />
           </div>
@@ -41,7 +41,7 @@ const Hero = () => {
         return <CompletedJobsCard />;
       default:
         return (
-          <div className="d-flex flex-column gap-4">
+          <div className="flex flex-col gap-4">
             <ProviderProfileCard />
             <RatingsCard />
           </div>
@@ -52,7 +52,7 @@ const Hero = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <Navbar />
-      <div className="container-fluid py-6 px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <motion.h1
           className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 text-indigo-900 text-center lg:text-left"
           initial={{ opacity: 0, y: -20 }}
@@ -88,7 +88,7 @@ const Hero = () => {
                   role="tab"
                   aria-selected={activeTab === tab.key}
                 >
-                  <i className={`bi ${tab.icon} me-2`}></i>
+                  <i className={`bi ${tab.icon} mr-2`}></i>
                   {tab.label}
                 </motion.button>
               ))}
@@ -100,7 +100,7 @@ const Hero = () => {
             className="lg:hidden mb-4 px-4 py-2 bg-indigo-600 text-white rounded-lg flex items-center justify-center"
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           >
-            <i className={`bi ${isSidebarOpen ? 'bi-x' : 'bi-list'} me-2`}></i>
+            <i className={`bi ${isSidebarOpen ? 'bi-x' : 'bi-list'} mr-2`}></i>
             {isSidebarOpen ? 'Close Menu' : 'Menu'}
           </button>
 
@@ -109,13 +109,13 @@ const Hero = () => {
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
-                className="card shadow-xl bg-white/80 backdrop-blur-sm rounded-xl overflow-hidden"
+                className="bg-white/80 backdrop-blur-sm rounded-xl overflow-hidden shadow-xl"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="card-body p-4 sm:p-6">{renderContent()}</div>
+                <div className="p-4 sm:p-6">{renderContent()}</div>
               </motion.div>
             </AnimatePresence>
           </div>

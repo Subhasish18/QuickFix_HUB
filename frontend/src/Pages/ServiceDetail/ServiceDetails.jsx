@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FaStar, FaBuilding, FaMapMarkerAlt } from 'react-icons/fa';
 import axios from 'axios';
 import './ServiceDetails.css';
+import Footer from '../UserLandingPage/Footer';
+import Navbar from '../UserLandingPage/Navbar';
 
 const DEFAULT_IMAGE = "https://media.istockphoto.com/id/1516511531/photo/a-plumber-carefully-fixes-a-leak-in-a-sink-using-a-wrench.jpg?s=1024x1024&w=is&k=20&c=LkKMuHe7Uj0PjkyC0bn7HEQmQ8Iidl8B8_rqFiPSS2A=";
 
@@ -48,11 +50,13 @@ const ServiceDetails = () => {
   </div>
 );
   return (
-    <section className="featured-section">
-      <h2 className="featured-title">{serviceName} Providers</h2>
-      <div className="services-grid">
-        {services.map((service, idx) => (
-          <div 
+    <>
+      <Navbar />
+      <section className="featured-section">
+        <h2 className="featured-title">{serviceName} Providers</h2>
+        <div className="services-grid">
+          {services.map((service, idx) => (
+            <div
             key={idx} 
             className="service-card clickable" 
             tabIndex="0"
@@ -97,6 +101,8 @@ const ServiceDetails = () => {
         ))}
       </div>
     </section>
+    <Footer />
+    </>
   );
 };
 

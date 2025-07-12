@@ -1,19 +1,55 @@
-import React from 'react';
-import { Card, ProgressBar } from 'react-bootstrap';
+import React, { useMemo, useState } from 'react';
+import { Card, ProgressBar, Button, Form } from 'react-bootstrap';
+import { getAuth } from 'firebase/auth';
+import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const RatingsCard = () => {
-  const ratings = {
-    average: 4.7,
-    total: 86,
-    distribution: [
-      { stars: 5, count: 63, percentage: 73 },
-      { stars: 4, count: 19, percentage: 22 },
-      { stars: 3, count: 3, percentage: 3 },
-      { stars: 2, count: 1, percentage: 1 },
-      { stars: 1, count: 0, percentage: 0 },
-    ]
+const RatingsCard = ({ providerId = 'default' }) => {
+  const [userRating, setUserRating] = useState(0);
+  const [userReview, setUserReview] = useState('');
+  const [hoveredStar, setHoveredStar] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const seededRandom = (seed) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
   };
+
+
+  const ratings = useMemo(() => {
+    const hash = providerId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const seed = hash * 12345;
+   
+    const baseRating = 3.9 + (seededRandom(seed) * 0.8);
+    const average = Math.round(baseRating * 10) / 10; 
+    
+
+    const total = Math.floor(45 + (seededRandom(seed + 1) * 75));
+    
+   
+    const fiveStarBase = average >= 4.5 ? 60 : average >= 4.2 ? 45 : 30;
+    const fourStarBase = average >= 4.3 ? 25 : average >= 4.0 ? 35 : 40;
+    const threeStarBase = average >= 4.2 ? 8 : average >= 4.0 ? 15 : 20;
+    const twoStarBase = average >= 4.1 ? 5 : 8;
+    const oneStarBase = average >= 4.2 ? 2 : 5;
+    
+    // Add some randomness to the distribution
+    const fiveStarCount = Math.floor(total * (fiveStarBase + seededRandom(seed + 2) * 10) / 100);
+    const fourStarCount = Math.floor(total * (fourStarBase + seededRandom(seed + 3) * 10) / 100);
+    const threeStarCount = Math.floor(total * (threeStarBase + seededRandom(seed + 4) * 5) / 100);
+    const twoStarCount = Math.floor(total * (twoStarBase + seededRandom(seed + 5) * 3) / 100);
+    const oneStarCount = total - fiveStarCount - fourStarCount - threeStarCount - twoStarCount;
+    
+    const distribution = [
+      { stars: 5, count: fiveStarCount, percentage: Math.round((fiveStarCount / total) * 100) },
+      { stars: 4, count: fourStarCount, percentage: Math.round((fourStarCount / total) * 100) },
+      { stars: 3, count: threeStarCount, percentage: Math.round((threeStarCount / total) * 100) },
+      { stars: 2, count: twoStarCount, percentage: Math.round((twoStarCount / total) * 100) },
+      { stars: 1, count: oneStarCount, percentage: Math.round((oneStarCount / total) * 100) },
+    ];
+    
+    return { average, total, distribution };
+  }, [providerId]);
 
   const renderStars = (rating) => {
     return [1, 2, 3, 4, 5].map((star) => (
@@ -29,6 +65,86 @@ const RatingsCard = () => {
         <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
       </svg>
     ));
+  };
+
+  const renderInteractiveStars = (rating, hovered) => {
+    return [1, 2, 3, 4, 5].map((star) => (
+      <svg
+        key={star}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        fill={star <= (hovered || rating) ? '#ffc107' : '#e9ecef'}
+        className="bi bi-star-fill"
+        viewBox="0 0 16 16"
+        style={{ cursor: 'pointer', marginRight: '4px' }}
+        onMouseEnter={() => setHoveredStar(star)}
+        onMouseLeave={() => setHoveredStar(0)}
+        onClick={() => setUserRating(star)}
+      >
+        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+      </svg>
+    ));
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!userRating || !userReview.trim()) {
+      alert('Please provide a rating and write a review.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      // Get current user's auth token
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+      
+      let authToken = null;
+      if (currentUser) {
+        authToken = await currentUser.getIdToken();
+      }
+
+      // For now, we'll use the providerId as string, but you might need to convert it to ObjectId
+      const reviewData = {
+        providerId: providerId, // This might need to be converted to actual provider ObjectId
+        rating: userRating,
+        comment: userReview,
+      };
+
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      // Add auth header if user is logged in
+      if (authToken) {
+        headers.Authorization = `Bearer ${authToken}`;
+      }
+
+      const response = await axios.post('http://localhost:5000/api/reviews', reviewData, {
+        headers: headers
+      });
+
+      if (response.status === 201) {
+        alert('Review submitted successfully!');
+        setUserRating(0);
+        setUserReview('');
+        setHoveredStar(0);
+      }
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      
+      if (error.response?.status === 401) {
+        alert('Please log in to submit a review.');
+      } else if (error.response?.data?.message) {
+        alert(`Error: ${error.response.data.message}`);
+      } else {
+        alert('Failed to submit review. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -77,6 +193,38 @@ const RatingsCard = () => {
         </div>
 
         <div className="mt-4 pt-4 border-top">
+          <h6 className="mb-3">Leave a Review</h6>
+          
+          <div className="bg-light p-3 rounded mb-4">
+            <Form onSubmit={handleSubmitReview}>
+              <Form.Group className="mb-3">
+                <Form.Label>Rating</Form.Label>
+                <div className="d-flex align-items-center">
+                  {renderInteractiveStars(userRating, hoveredStar)}
+                  <span className="ms-2 text-muted">
+                    {userRating > 0 ? `${userRating} star${userRating > 1 ? 's' : ''}` : 'Click to rate'}
+                  </span>
+                </div>
+              </Form.Group>
+              
+              <Form.Group className="mb-3">
+                <Form.Label>Your Review</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  placeholder="Write your review here..."
+                  value={userReview}
+                  onChange={(e) => setUserReview(e.target.value)}
+                  required
+                />
+              </Form.Group>
+              
+              <Button type="submit" variant="primary" disabled={isSubmitting}>
+                {isSubmitting ? 'Submitting...' : 'Submit Review'}
+              </Button>
+            </Form>
+          </div>
+
           <h6 className="mb-3">Recent Comments</h6>
           <div className="d-flex flex-column gap-3">
             <div className="bg-light p-3 rounded">
