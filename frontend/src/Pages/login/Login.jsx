@@ -9,7 +9,7 @@ import {
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../UserLandingPage/Footer';
-import Navbar from './Navbar';
+import Navbar from '../UserLandingPage/Navbar';
 
 const Login = () => {
   const [email, setEmail] = useState('');

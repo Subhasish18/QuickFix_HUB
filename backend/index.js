@@ -10,6 +10,7 @@ import providerDetailsRoute from './routes/providerDetailsRoute.js';
 import ProviderCardShowRoute from './routes/providercardshowRoute.js';
 import serviceDetailsRoute from './routes/serviceDetailsRoute.js';
 import loginRoute from './routes/loginRoute.js';
+import reviewRoute from './routes/reviewRoute.js';
 // Load environment variables from .env file
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use(bodyParser.json());
 // Define routes
 app.use('/api/user-details', userDetailsRoute);
 app.use('/api/provider-details', providerDetailsRoute);
+app.use('/api/reviews', reviewRoute);
 app.use('/api/provider-card-show', ProviderCardShowRoute);
 
 app.use('/api/service-details', serviceDetailsRoute);

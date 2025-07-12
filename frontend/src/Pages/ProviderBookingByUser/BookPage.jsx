@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import Navbar from './Navbar'
+import Navbar from '../UserLandingPage/Navbar'
 import Footer from './Footer'
 import StatsCard from './StatsCard';
 import RatingsCard from './RatingsCard';
@@ -45,7 +45,7 @@ const BookPage = () => {
           </div>
           <div className="col-12 col-md-4">
             <div className="d-flex flex-column gap-4">
-              <RatingsCard />
+              <RatingsCard providerId={selectedService?.company || selectedService?.id || 'default'} />
             </div>
           </div>
         </div>

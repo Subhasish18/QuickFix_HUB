@@ -1,10 +1,9 @@
-// 🔄 Changed version
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
 import Footer from '../UserLandingPage/Footer';
-import Navbar from './Navbar';
+import Navbar from '../UserLandingPage/Navbar';
 
 const SERVICE_OPTIONS = [
   "Plumbing", "Electrical", "Cleaning", "Landscaping", "Painting",

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import auth from "../../utils/Firebase";
 import Footer from './Footer';
-import Navbar from './Navbar';
+import Navbar from '../UserLandingPage/Navbar';
 import { FaUser, FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
 
 const SignupProvider = () => {
