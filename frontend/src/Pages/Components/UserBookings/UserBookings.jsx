@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // Add at the top
 import './UserBookings.css';
 
 const UserBookings = () => {
@@ -9,6 +10,7 @@ const UserBookings = () => {
 
   // Get userId from localStorage
   const userId = localStorage.getItem('userId');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -108,6 +110,13 @@ const UserBookings = () => {
             </span>
           </div>
         </div>
+
+        {booking.status === 'confirmed' && booking.confirmedAt && (
+          <div className="info-row">
+            <span className="info-label">Confirmed At:</span>
+            <span className="info-value">{formatDate(booking.confirmedAt)}</span>
+          </div>
+        )}
       </div>
 
       <div className="booking-actions">
@@ -123,6 +132,15 @@ const UserBookings = () => {
         )}
         {booking.status === 'confirmed' && (
           <>
+            <button
+              onClick={() => handleCompleteBooking(booking._id)}
+              className="group w-full sm:w-auto inline-flex items-center justify-center px-5 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold text-sm rounded-full shadow-md hover:from-green-600 hover:to-emerald-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2"
+            >
+              <span className="flex items-center gap-2">
+                <span>Job Done – Click to Confirm</span>
+              </span>
+            </button>
+
             <button onClick={() => alert(`Cancel booking ${booking._id}`)} className="cancel-booking-button">
               Cancel
             </button>
@@ -131,17 +149,65 @@ const UserBookings = () => {
             </button>
           </>
         )}
-        {booking.status === 'completed' && (
-          <button onClick={() => alert(`Leave review for booking`)} className="review-button">
-            Leave Review
+       {booking.status === 'completed' && booking.paymentStatus === 'pending' && (
+          <button
+            onClick={() => handlePayment(booking)}
+            className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold text-sm rounded-full shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
+          >
+            💳 Pay Now
           </button>
         )}
+
+        {booking.status === 'completed' && booking.paymentStatus === 'paid' && (
+          <span className="inline-block px-4 py-1 text-sm rounded-full bg-green-100 text-green-700 font-medium shadow-sm">
+            ✅ Payment Done
+          </span>
+        )}
+
+        {booking.status === 'completed' && (
+          <button
+            onClick={() => alert(`Leave review for booking`)}
+            className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold text-sm rounded-full shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+          >
+            ✍️ Leave Review
+          </button>
+        )}
+
         <button onClick={() => alert(`Viewing details for booking ${booking._id}`)} className="details-button">
           View Details
         </button>
       </div>
     </div>
   );
+
+  const handleCompleteBooking = async (bookingId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' })
+      });
+      if (!response.ok) throw new Error('Failed to mark as completed');
+      // Option 1: Refetch all bookings from backend
+      // await fetchBookings();
+      // Option 2: Update state locally for instant UI feedback:
+      setBookings(prev =>
+        prev.map(b => b._id === bookingId ? { ...b, status: 'completed' } : b)
+      );
+    } catch (err) {
+      alert('Failed to complete booking');
+      console.error(err);
+    }
+  };
+
+  const handlePayment = (booking) => {
+    navigate('/payment', {
+      state: {
+        bookingId: booking._id,
+        price: booking.price
+      }
+    });
+  };
 
   return (
     <div className="user-bookings">

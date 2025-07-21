@@ -13,6 +13,7 @@ import ProtectedRoute from './utils/ProtectedRoute';
 import Hero from './Pages/ServiceLandingpages/Hero.jsx';
 import ServiceDetails from './Pages/ServiceDetail/ServiceDetails.jsx';
 import BookPage from './Pages/ProviderBookingByUser/BookPage.jsx';
+import PaymentPage from './Pages/Payment/PaymentPage.jsx';
 
 const App = () => {
   return (
@@ -30,6 +31,7 @@ const App = () => {
         <Route path="/hero" element={<Hero/>} />
         <Route path='/serviceDetails/:serviceName' element={<ServiceDetails/>} />
         <Route path='/book' element={<BookPage />} />
+        <Route path="/payment" element={<PaymentPage />} />
       </Routes>
     </Router>
   );

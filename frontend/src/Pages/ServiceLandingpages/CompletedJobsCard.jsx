@@ -1,37 +1,33 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-const completedJobs = [
-  {
-    id: "comp1",
-    customer: "Ari",
-    type: "Drain Cleaning",
-    date: "Apr 28, 2025",
-    payment: "₹120",
-    rating: 5,
-    feedback: "Excellent service, drain works perfect now."
-  },
-  {
-    id: "comp2",
-    customer: "Maharaj",
-    type: "Faucet Replacement",
-    date: "Apr 25, 2025",
-    payment: "₹195",
-    rating: 4,
-    feedback: "Good work, very professional."
-  },
-  {
-    id: "comp3",
-    customer: "Subh",
-    type: "Pipe Repair",
-    date: "Apr 22, 2025",
-    payment: "₹150",
-    rating: 5,
-    feedback: "Fixed our emergency leak quickly. Would hire again!"
-  }
-];
-
 const CompletedJobsCard = () => {
+  const [completedJobs, setCompletedJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const providerId = localStorage.getItem('userId');
+
+  useEffect(() => {
+    const fetchCompletedJobs = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch(`http://localhost:5000/api/provider-bookings/provider/${providerId}`);
+        if (!response.ok) throw new Error('Failed to fetch completed jobs');
+        const data = await response.json();
+        // Filter for completed jobs only
+        setCompletedJobs((data.bookings || []).filter(job => job.status === 'completed'));
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to load completed jobs');
+        setLoading(false);
+      }
+    };
+    if (providerId) fetchCompletedJobs();
+  }, [providerId]);
+
   const renderStars = (rating) => {
     return Array(5).fill(0).map((_, i) => (
       <motion.svg
@@ -64,35 +60,50 @@ const CompletedJobsCard = () => {
         >
           Recent Completed Jobs
         </motion.h2>
-        <div className="flex flex-col gap-4">
-          {completedJobs.map((job, index) => (
-            <motion.div
-              key={job.id}
-              className="pb-4 border-b border-gray-200 last:border-b-0"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 + index * 0.1 }}
-              whileHover={{ scale: 1.01 }}
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start">
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 bg-green-500 text-white rounded-full text-sm flex items-center">
-                      <i className="bi bi-check me-1"></i>
-                      Completed
+        {loading ? (
+          <div>Loading...</div>
+        ) : error ? (
+          <div className="text-red-600">{error}</div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {completedJobs.length === 0 ? (
+              <div>No completed jobs found.</div>
+            ) : (
+              completedJobs.map((job, index) => (
+                <motion.div
+                  key={job._id}
+                  className="pb-4 border-b border-gray-200 last:border-b-0"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.2 + index * 0.1 }}
+                  whileHover={{ scale: 1.01 }}
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start">
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <span className="px-3 py-1 bg-green-500 text-white rounded-full text-sm flex items-center">
+                          <i className="bi bi-check me-1"></i>
+                          Completed
+                        </span>
+                        <span className="text-sm text-gray-600">
+                          {job.scheduledTime
+                            ? new Date(job.scheduledTime).toLocaleDateString()
+                            : job.date}
+                        </span>
+                      </div>
+                      <h3 className="text-base font-semibold text-gray-800 mt-2">{job.serviceDetails || job.type}</h3>
+                      <p className="text-sm text-gray-600 mb-1">{job.customer || job.userId?.name || ''}</p>
+                      {/* Optionally, add rating/feedback here if available */}
+                    </div>
+                    <span className="text-base font-semibold text-green-600">
+                      {job.price ? `₹${job.price}` : ''}
                     </span>
-                    <span className="text-sm text-gray-600">{job.date}</span>
                   </div>
-                  <h3 className="text-base font-semibold text-gray-800 mt-2">{job.type}</h3>
-                  <p className="text-sm text-gray-600 mb-1">{job.customer}</p>
-                  <div className="flex items-center gap-1">{renderStars(job.rating)}</div>
-                  <p className="text-sm italic text-gray-600 mt-1">"{job.feedback}"</p>
-                </div>
-                <span className="text-base font-semibold text-green-600">{job.payment}</span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                </motion.div>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </motion.div>
   );
