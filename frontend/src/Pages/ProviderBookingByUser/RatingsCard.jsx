@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react'; 
 import { Card, ProgressBar, Button, Form } from 'react-bootstrap';
 import { getAuth } from 'firebase/auth';
 import axios from 'axios';
@@ -9,6 +9,24 @@ const RatingsCard = ({ providerId = 'default' }) => {
   const [userReview, setUserReview] = useState('');
   const [hoveredStar, setHoveredStar] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [recentReviews, setRecentReviews] = useState([]); 
+
+
+  const fetchReviews = useCallback(async () => {
+    if (providerId === 'default') return;
+    try {
+      const response = await axios.get(`http://localhost:5000/api/reviews/${providerId}`);
+      setRecentReviews(response.data);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
+  }, [providerId]);
+
+
+  useEffect(() => {
+    fetchReviews();
+  }, [fetchReviews]);
+
 
   const seededRandom = (seed) => {
     const x = Math.sin(seed) * 10000;
@@ -33,7 +51,7 @@ const RatingsCard = ({ providerId = 'default' }) => {
     const twoStarBase = average >= 4.1 ? 5 : 8;
     const oneStarBase = average >= 4.2 ? 2 : 5;
     
-    // Add some randomness to the distribution
+
     const fiveStarCount = Math.floor(total * (fiveStarBase + seededRandom(seed + 2) * 10) / 100);
     const fourStarCount = Math.floor(total * (fourStarBase + seededRandom(seed + 3) * 10) / 100);
     const threeStarCount = Math.floor(total * (threeStarBase + seededRandom(seed + 4) * 5) / 100);
@@ -97,30 +115,26 @@ const RatingsCard = ({ providerId = 'default' }) => {
     setIsSubmitting(true);
     
     try {
-      // Get current user's auth token
       const auth = getAuth();
       const currentUser = auth.currentUser;
       
-      let authToken = null;
-      if (currentUser) {
-        authToken = await currentUser.getIdToken();
+      if (!currentUser) {
+        alert('Please log in to submit a review.');
+        setIsSubmitting(false);
+        return;
       }
+      const authToken = await currentUser.getIdToken();
 
-      // For now, we'll use the providerId as string, but you might need to convert it to ObjectId
       const reviewData = {
-        providerId: providerId, // This might need to be converted to actual provider ObjectId
+        providerId: providerId,
         rating: userRating,
         comment: userReview,
       };
 
       const headers = {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`
       };
-
-      // Add auth header if user is logged in
-      if (authToken) {
-        headers.Authorization = `Bearer ${authToken}`;
-      }
 
       const response = await axios.post('http://localhost:5000/api/reviews', reviewData, {
         headers: headers
@@ -131,12 +145,13 @@ const RatingsCard = ({ providerId = 'default' }) => {
         setUserRating(0);
         setUserReview('');
         setHoveredStar(0);
+        fetchReviews(); 
       }
     } catch (error) {
       console.error('Error submitting review:', error);
       
       if (error.response?.status === 401) {
-        alert('Please log in to submit a review.');
+        alert('Authentication error. Please log in again.');
       } else if (error.response?.data?.message) {
         alert(`Error: ${error.response.data.message}`);
       } else {
@@ -226,30 +241,26 @@ const RatingsCard = ({ providerId = 'default' }) => {
           </div>
 
           <h6 className="mb-3">Recent Comments</h6>
-          <div className="d-flex flex-column gap-3">
-            <div className="bg-light p-3 rounded">
-              <div className="d-flex justify-content-between align-items-center">
-                <span className="fw-medium">Alex Williams</span>
-                <div className="d-flex">
-                  {renderStars(5)}
+
+           <div className="d-flex flex-column gap-3">
+            {recentReviews.length > 0 ? (
+              recentReviews.map((review) => (
+                <div key={review._id} className="bg-light p-3 rounded">
+                  <div className="d-flex justify-content-between align-items-center">
+       
+                    <span className="fw-medium">{review.userId?.name || 'Anonymous'}</span>
+                    <div className="d-flex">
+                      {renderStars(review.rating)}
+                    </div>
+                  </div>
+                  <p className="mt-1 mb-0" style={{ fontSize: '0.875rem' }}>
+                    {review.comment}
+                  </p>
                 </div>
-              </div>
-              <p className="mt-1 mb-0" style={{ fontSize: '0.875rem' }}>
-                "Arrived on time and fixed our leak quickly. Very professional and cleaned up afterward."
-              </p>
-            </div>
-            
-            <div className="bg-light p-3 rounded">
-              <div className="d-flex justify-content-between align-items-center">
-                <span className="fw-medium">Taylor Johnson</span>
-                <div className="d-flex">
-                  {renderStars(4)}
-                </div>
-              </div>
-              <p className="mt-1 mb-0" style={{ fontSize: '0.875rem' }}>
-                "Good service, fixed our issue but took a bit longer than expected."
-              </p>
-            </div>
+              ))
+            ) : (
+              <p className="text-muted">No reviews yet. Be the first to leave a review!</p>
+            )}
           </div>
         </div>
       </Card.Body>
