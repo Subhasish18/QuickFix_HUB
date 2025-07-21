@@ -32,4 +32,27 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Update booking status
+router.put('/:bookingId/status', async (req, res) => {
+  const { bookingId } = req.params;
+  const { status, paymentStatus, confirmedAt } = req.body;
+
+  const update = {};
+  if (status) update.status = status;
+  if (paymentStatus) update.paymentStatus = paymentStatus;
+  if (confirmedAt) update.confirmedAt = confirmedAt;
+
+  try {
+    const booking = await Booking.findByIdAndUpdate(
+      bookingId,
+      update,
+      { new: true }
+    );
+    if (!booking) return res.status(404).json({ message: 'Booking not found' });
+    res.json({ booking });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update booking' });
+  }
+});
+
 export default router;

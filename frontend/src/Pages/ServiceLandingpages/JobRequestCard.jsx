@@ -11,8 +11,8 @@ const JobRequestsCard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchJobRequests = async () => {
+
+  const fetchJobRequests = async () => {
       try {
         setLoading(true);
         setError(null);
@@ -34,19 +34,28 @@ const JobRequestsCard = () => {
       }
     };
 
+  useEffect(() => {
     if (providerId) {
       fetchJobRequests();
     }
   }, [providerId]);
 
   const acceptJob = async (jobId) => {
-    // You may want to call an API to update status in DB
-    setRequests(prevRequests =>
-      prevRequests.map(job =>
-        job._id === jobId ? { ...job, status: "accepted" } : job
-      )
-    );
-    alert("Job Accepted: You've successfully accepted this job request.");
+    try {
+      const now = new Date().toISOString();
+      const response = await fetch(`http://localhost:5000/api/bookings/${jobId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'confirmed', confirmedAt: now })
+      });
+      if (!response.ok) throw new Error('Failed to update booking status');
+      await response.json();
+      fetchJobRequests();
+      alert("Job Confirmed: You've successfully confirmed this job request.");
+    } catch (err) {
+      alert("Failed to confirm job.");
+      console.error(err);
+    }
   };
 
   const declineJob = async (jobId) => {
@@ -60,7 +69,8 @@ const JobRequestsCard = () => {
   };
 
   const pendingRequests = requests.filter(job => job.status === "pending");
-  const acceptedRequests = requests.filter(job => job.status === "accepted");
+  const acceptedRequests = requests.filter(job => job.status === "confirmed");
+  
 
   return (
     <motion.div
@@ -129,96 +139,168 @@ const JobRequestsCard = () => {
               transition={{ duration: 0.3 }}
             >
               {activeTab === 'pending' && (
-                <div className="flex flex-col gap-4">
-                  {pendingRequests.length > 0 ? (
-                    pendingRequests.map((job, index) => (
+                  <div className="flex flex-col gap-4">
+                    {pendingRequests.length > 0 ? (
+                      pendingRequests.map((job, index) => (
+                        <motion.div
+                          key={job._id}
+                          className="bg-indigo-50 p-4 rounded-lg"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
+                          whileHover={{ scale: 1.02 }}
+                        >
+                          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start mb-2">
+                            <h3 className="text-base font-semibold text-gray-800">
+                              {job.serviceDetails || job.type}
+                            </h3>
+                            <span className="px-3 py-1 bg-indigo-600 text-white rounded-full text-xs sm:text-sm text-center leading-snug">
+                              {job.scheduledTime
+                                ? new Date(job.scheduledTime).toLocaleDateString()
+                                : job.date}
+                              <br />
+                              {job.scheduledTime
+                                ? new Date(job.scheduledTime).toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })
+                                : job.time}
+                            </span>
+                          </div>
+
+                          <p className="text-xs sm:text-sm text-gray-600 mb-1">
+                            {job.customer || job.userId?.name || ''}
+                          </p>
+                          <p className="text-xs sm:text-sm text-gray-600 mb-1">
+                            {job.description}
+                          </p>
+                          <p className="text-xs sm:text-sm text-gray-600 mb-1">
+                            {job.address || job.location || ''}
+                          </p>
+
+                          <div className="flex flex-col sm:flex-row gap-3 mt-3">
+                            <motion.button
+                              className="px-4 py-2 sm:px-6 sm:py-2 bg-indigo-600 text-white rounded-lg"
+                              onClick={() => acceptJob(job._id)}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              Accept
+                            </motion.button>
+                            <motion.button
+                              className="px-4 py-2 sm:px-6 sm:py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-indigo-100 hover:text-indigo-800"
+                              onClick={() => declineJob(job._id)}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              Decline
+                            </motion.button>
+                          </div>
+                        </motion.div>
+                      ))
+                    ) : (
                       <motion.div
-                        key={job._id}
-                        className="bg-indigo-50 p-4 rounded-lg"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
-                        whileHover={{ scale: 1.02 }}
+                        className="text-center py-4 text-gray-600 text-xs sm:text-sm"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
                       >
-                        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start mb-2">
-                          <h3 className="text-base font-semibold text-gray-800">{job.serviceDetails || job.type}</h3>
-                          <span className="px-3 py-1 bg-indigo-600 text-white rounded-full text-xs sm:text-sm">
-                            {job.scheduledTime
-                              ? new Date(job.scheduledTime).toLocaleDateString()
-                              : job.date}
-                          </span>
-                        </div>
-                        <p className="text-xs sm:text-sm text-gray-600 mb-1">{job.customer || job.userId?.name || ''}</p>
-                        <p className="text-xs sm:text-sm text-gray-600 mb-1">{job.description}</p>
-                        <p className="text-xs sm:text-sm text-gray-600 mb-1">{job.address || job.location || ''}</p>
-                        <p className="text-xs text-gray-600">
-                          Time: {job.scheduledTime
-                            ? new Date(job.scheduledTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                            : job.time}
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-3 mt-3">
-                          <motion.button
-                            className="px-4 py-2 sm:px-6 sm:py-2 bg-indigo-600 text-white rounded-lg"
-                            onClick={() => acceptJob(job._id)}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            Accept
-                          </motion.button>
-                          <motion.button
-                            className="px-4 py-2 sm:px-6 sm:py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-indigo-100 hover:text-indigo-800"
-                            onClick={() => declineJob(job._id)}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            Decline
-                          </motion.button>
-                        </div>
+                        No pending requests
                       </motion.div>
-                    ))
-                  ) : (
-                    <motion.div
-                      className="text-center py-4 text-gray-600 text-xs sm:text-sm"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      No pending requests
-                    </motion.div>
-                  )}
-                </div>
-              )}
+                    )}
+                  </div>
+                )}
               {activeTab === 'accepted' && (
                 <div className="flex flex-col gap-4">
                   {acceptedRequests.length > 0 ? (
-                    acceptedRequests.map((job, index) => (
-                      <motion.div
-                        key={job._id}
-                        className="bg-indigo-50 p-4 rounded-lg"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
-                        whileHover={{ scale: 1.02 }}
-                      >
-                        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start mb-2">
-                          <h3 className="text-base font-semibold text-gray-800">{job.serviceDetails || job.type}</h3>
-                          <span className="px-3 py-1 bg-green-500 text-white rounded-full text-xs sm:text-sm">
-                            {job.scheduledTime
-                              ? new Date(job.scheduledTime).toLocaleDateString()
-                              : job.date}
-                          </span>
-                        </div>
-                        <p className="text-xs sm:text-sm text-gray-600 mb-1">{job.customer || job.userId?.name || ''}</p>
-                        <p className="text-xs sm:text-sm text-gray-600 mb-1">{job.description}</p>
-                        <p className="text-xs sm:text-sm text-gray-600 mb-1">{job.address || job.location || ''}</p>
-                        <p className="text-xs text-gray-600">
-                          Time: {job.scheduledTime
-                            ? new Date(job.scheduledTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                            : job.time}
-                        </p>
-                      </motion.div>
-                    ))
-                  ) : (
+                    acceptedRequests.map((job, index) => {
+                      console.log(job); // Optional debug
+
+                      return (
+                        <motion.div
+                          key={job._id}
+                          className="bg-gradient-to-br from-white to-blue-50 border border-blue-200 p-5 rounded-xl shadow-sm hover:shadow-lg hover:border-blue-300 transition-all duration-300"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
+                          whileHover={{ scale: 1.02 }}
+                        >
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              <span className="text-sm font-semibold text-slate-700">Customer:</span>
+                              <span className="text-sm text-slate-600 font-medium">
+                                {job.customer || job.userId?.name || 'N/A'}
+                              </span>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                              <div className="w-2 h-2 bg-purple-500 rounded-full mt-1.5"></div>
+                              <span className="text-sm font-semibold text-slate-700">Description:</span>
+                              <span className="text-sm text-slate-600 leading-relaxed">
+                                {job.serviceDetails || job.type}
+                              </span>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                              <div className="w-2 h-2 bg-orange-500 rounded-full mt-1.5"></div>
+                              <span className="text-sm font-semibold text-slate-700">Location:</span>
+                              <span className="text-sm text-slate-600">
+                                {job.address || job.location || 'N/A'}
+                              </span>
+                            </div>
+
+                            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 p-4 rounded-lg">
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="w-2 h-2 bg-indigo-600 rounded-full"></div>
+                                <span className="text-sm font-bold text-indigo-800">Job Schedule</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-white p-3 rounded-lg border border-indigo-100">
+                                  <span className="text-xs font-semibold text-indigo-600 block mb-1">📅 Date:</span>
+                                  <span className="text-sm text-indigo-800 font-medium">
+                                    {job.scheduledTime
+                                      ? new Date(job.scheduledTime).toLocaleDateString()
+                                      : job.date}
+                                  </span>
+                                </div>
+                                <div className="bg-white p-3 rounded-lg border border-indigo-100">
+                                  <span className="text-xs font-semibold text-indigo-600 block mb-1">⏰ Time:</span>
+                                  <span className="text-sm text-indigo-800 font-medium">
+                                    {job.scheduledTime
+                                      ? new Date(job.scheduledTime).toLocaleTimeString([], {
+                                          hour: '2-digit',
+                                          minute: '2-digit',
+                                        })
+                                      : job.time}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {job.confirmedAt && (
+                            <div className="mt-6">
+                              <div className="w-full sm:max-w-md px-4 py-3 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg shadow-md text-center">
+                                <span className="block text-sm font-semibold mb-1">
+                                  ✓ CONFIRMED
+                                </span>
+                                <span className="block text-sm opacity-90">
+                                  {new Date(job.confirmedAt).toLocaleDateString()}
+                                </span>
+                                <span className="block text-sm opacity-90">
+                                  {new Date(job.confirmedAt).toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </motion.div>
+                      );
+                    })
+                  ): (
                     <motion.div
                       className="text-center py-4 text-gray-600 text-xs sm:text-sm"
                       initial={{ opacity: 0 }}
