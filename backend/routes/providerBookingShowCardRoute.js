@@ -7,8 +7,13 @@ const router = express.Router();
 router.get('/provider/:providerId', async (req, res) => {
   try {
     const { providerId } = req.params;
+    // Populate both userId (for user name) and serviceId (for provider location)
     const bookings = await Booking.find({ serviceId: providerId })
-      .populate('userId', 'name email');
+      .populate([
+        { path: 'userId', select: 'name email location' },
+        { path: 'serviceId', select: 'location name' }
+      ]);
+  
     res.json({ bookings });
   } catch (err) {
     console.error('Error fetching provider bookings:', err);

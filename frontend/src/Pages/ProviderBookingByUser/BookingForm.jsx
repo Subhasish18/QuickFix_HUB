@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const BookingForm = ({ serviceId, userId }) => {
+const BookingForm = ({ serviceId }) => {
   const [form, setForm] = useState({
     scheduledTime: '',
     serviceDetails: ''
   });
   const [loading, setLoading] = useState(false);
+
+  // Get userId from localStorage (key: 'userid')
+  const userId = localStorage.getItem('userId');
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
