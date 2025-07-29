@@ -59,13 +59,20 @@ const JobRequestsCard = () => {
   };
 
   const declineJob = async (jobId) => {
-    // You may want to call an API to update status in DB
-    setRequests(prevRequests =>
-      prevRequests.map(job =>
-        job._id === jobId ? { ...job, status: "declined" } : job
-      )
-    );
-    alert("Job Declined: You've declined this job request.");
+    try {
+      const response = await fetch(`http://localhost:5000/api/bookings/${jobId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'declined' })
+      });
+      if (!response.ok) throw new Error('Failed to update booking status');
+      await response.json();
+      fetchJobRequests(); // Refetch to get the latest state from the server
+      alert("Job Declined: You've declined this job request.");
+    } catch (err) {
+      alert("Failed to decline job.");
+      console.error(err);
+    }
   };
 
   const pendingRequests = requests.filter(job => job.status === "pending");
@@ -246,7 +253,7 @@ const JobRequestsCard = () => {
                               <div className="w-2 h-2 bg-orange-500 rounded-full mt-1.5"></div>
                               <span className="text-sm font-semibold text-slate-700">Location:</span>
                               <span className="text-sm text-slate-600">
-                                {job.address || job.location || 'N/A'}
+                                {job.address || job.userId?.location || 'N/A'}
                               </span>
                             </div>
 
