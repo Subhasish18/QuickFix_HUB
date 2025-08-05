@@ -6,7 +6,7 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import EditProviderModal from '../../Pages/ServiceLandingpages/EditProviderModal';
-
+import Map from '../../Pages/Components/Map'; 
 const UnifiedProfileCard = ({ 
   serviceData, 
   mode = 'view', 
@@ -25,23 +25,49 @@ const UnifiedProfileCard = ({
     pricingModel: '',
     availability: '',
     serviceTypes: '',
-    location: '',
+    city: '',
+    state: '',
   });
 
-  const defaultData = {
-    name: serviceData?.company || 'Service Provider',
-    company: serviceData?.company || 'Service Provider',
-    title: serviceData?.title || 'Professional Service Provider',
-    email: 'provider@example.com',
-    phoneNumber: '',
-    profileImage: serviceData?.image || 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg',
-    description: serviceData?.title || 'Professional Service Provider',
-    pricingModel: 'hourly',
-    availability: { mon: ['9:00', '17:00'] },
-    serviceTypes: [serviceData?.category || 'General Services'],
-    location: 'Unknown',
-    rating: serviceData?.rating || 4.2,
-    category: serviceData?.category || 'General Services'
+  // Location dropdown states
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [stateError, setStateError] = useState('');
+  const [cityError, setCityError] = useState('');
+
+  const CSC_API_KEY = import.meta.env.VITE_CSC_API_KEY;
+
+  // Fetch provider profile (used for initial load and polling)
+  const fetchProviderProfile = async () => {
+    const auth = getAuth();
+    if (!auth.currentUser) return;
+    try {
+      const token = await auth.currentUser.getIdToken();
+      const res = await axios.get('http://localhost:5000/api/provider-details/profile', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProvider(res.data);
+      setFormData({
+        name: res.data.name || '',
+        email: res.data.email || '',
+        phoneNumber: res.data.phoneNumber || '',
+        profileImage: res.data.profileImage || '',
+        description: res.data.description || '',
+        pricingModel: res.data.pricingModel || '',
+        availability: res.data.availability
+          ? Object.entries(res.data.availability)
+              .map(([day, hours]) => `${day}: ${hours.join('-')}`)
+              .join('; ')
+          : '',
+        serviceTypes: res.data.serviceTypes?.join(', ') || '',
+        city: res.data.city || '',
+        state: res.data.state || '',
+      });
+      setError('');
+    } catch (err) {
+      console.error('Error fetching/polling provider:', err);
+      if (loading) setError('Failed to load profile data.');
+    }
   };
 
   useEffect(() => {
@@ -49,7 +75,6 @@ const UnifiedProfileCard = ({
       setLoading(false);
       return;
     }
-
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
@@ -57,77 +82,70 @@ const UnifiedProfileCard = ({
         setLoading(false);
         return;
       }
-
-      try {
-        const token = await user.getIdToken();
-        const res = await axios.get('http://localhost:5000/api/provider-details/profile', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setProvider(res.data);
-        setFormData({
-          name: res.data.name || '',
-          email: res.data.email || '',
-          phoneNumber: res.data.phoneNumber || '',
-          profileImage: res.data.profileImage || '',
-          description: res.data.description || '',
-          pricingModel: res.data.pricingModel || '',
-          availability: res.data.availability
-            ? Object.entries(res.data.availability)
-                .map(([day, hours]) => `${day}: ${hours.join('-')}`)
-                .join('; ')
-            : '',
-          serviceTypes: res.data.serviceTypes?.join(', ') || '',
-          location: res.data.location || '',
-        });
-        setError('');
-      } catch (err) {
-        console.error('Error fetching provider:', err);
-        setError('Failed to load profile data.');
-      } finally {
-        setLoading(false);
-      }
+      await fetchProviderProfile();
+      setLoading(false);
     });
-
-    const interval = setInterval(async () => {
-      if (auth.currentUser) {
-        try {
-          const token = await auth.currentUser.getIdToken();
-          const res = await axios.get('http://localhost:5000/api/provider-details/profile', {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          setProvider(res.data);
-          setFormData({
-            name: res.data.name || '',
-            email: res.data.email || '',
-            phoneNumber: res.data.phoneNumber || '',
-            profileImage: res.data.profileImage || '',
-            description: res.data.description || '',
-            pricingModel: res.data.pricingModel || '',
-            availability: res.data.availability
-              ? Object.entries(res.data.availability)
-                  .map(([day, hours]) => `${day}: ${hours.join('-')}`)
-                  .join('; ')
-              : '',
-            serviceTypes: res.data.serviceTypes?.join(', ') || '',
-            location: res.data.location || '',
-          });
-        } catch (err) {
-          console.error('Error polling provider:', err);
-        }
-      }
-    }, 30000);
-
+    const interval = setInterval(fetchProviderProfile, 30000);
     return () => {
       unsubscribe();
       clearInterval(interval);
     };
   }, [mode]);
 
+  // Fetch states on mount
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const response = await axios.get('https://api.countrystatecity.in/v1/countries/IN/states', {
+          headers: { 'X-CSCAPI-KEY': CSC_API_KEY },
+        });
+        setStates(response.data || []);
+      } catch (err) {
+        console.error('❌ Error fetching states:', err);
+        setStateError('Could not load states.');
+      }
+    };
+    fetchStates();
+  }, []);
+
+  // Fetch cities when state changes
+  useEffect(() => {
+    if (!formData.state) {
+      setCities([]);
+      return;
+    }
+    const selectedState = states.find(s => s.name === formData.state);
+    if (!selectedState) {
+      setCities([]);
+      return;
+    }
+    const fetchCities = async () => {
+      try {
+        setCityError('');
+        const response = await axios.get(
+          `https://api.countrystatecity.in/v1/countries/IN/states/${selectedState.iso2}/cities`,
+          { headers: { 'X-CSCAPI-KEY': CSC_API_KEY } }
+        );
+        setCities(response.data || []);
+      } catch (err) {
+        console.error('❌ Error fetching cities:', err);
+        setCityError('Could not load cities.');
+      }
+    };
+    fetchCities();
+  }, [formData.state, states]);
+
+  // Input handler: reset city if state changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === 'state') {
+      setFormData((prev) => ({ ...prev, state: value, city: '' }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
+  // Update handler
   const handleUpdate = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -145,7 +163,7 @@ const UnifiedProfileCard = ({
         formData.availability.split(';').forEach((entry) => {
           const [day, hours] = entry.split(':').map((s) => s.trim());
           if (day && hours) {
-            availabilityObj[day] = hours.split('-').map((h) => h.trim());
+            availabilityObj[day.toLowerCase().slice(0, 3)] = hours.split('-').map((h) => h.trim());
           }
         });
       }
@@ -159,7 +177,8 @@ const UnifiedProfileCard = ({
         pricingModel: formData.pricingModel,
         availability: availabilityObj,
         serviceTypes: formData.serviceTypes.split(',').map((type) => type.trim()),
-        location: formData.location,
+        city: formData.city,
+        state: formData.state,
       };
 
       const token = await user.getIdToken();
@@ -168,21 +187,6 @@ const UnifiedProfileCard = ({
       });
 
       setProvider(res.data.provider);
-      setFormData({
-        name: res.data.provider.name || '',
-        email: res.data.provider.email || '',
-        phoneNumber: res.data.provider.phoneNumber || '',
-        profileImage: res.data.provider.profileImage || '',
-        description: res.data.provider.description || '',
-        pricingModel: res.data.provider.pricingModel || '',
-        availability: res.data.provider.availability
-          ? Object.entries(res.data.provider.availability)
-              .map(([day, hours]) => `${day}: ${hours.join('-')}`)
-              .join('; ')
-          : '',
-        serviceTypes: res.data.provider.serviceTypes?.join(', ') || '',
-        location: res.data.provider.location || '',
-      });
       setShowEditModal(false);
       setError('');
       if (onUpdate) onUpdate(res.data.provider);
@@ -194,7 +198,28 @@ const UnifiedProfileCard = ({
     }
   };
 
+  // Default data for fallback
+  const defaultData = {
+    name: 'Service Provider',
+    email: 'provider@example.com',
+    phoneNumber: '',
+    profileImage: 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg',
+    description: 'Professional Service Provider',
+    pricingModel: 'hourly',
+    availability: { mon: ['9:00', '17:00'] },
+    serviceTypes: ['General Services'],
+    city: 'Unknown',
+    state: 'Unknown',
+    rating: 4.2,
+  };
+
+  // Use fetched provider data or fallback
   const providerData = provider || serviceData || defaultData;
+
+  // Safely get the primary service type to prevent runtime errors
+  const primaryService = (providerData.serviceTypes && providerData.serviceTypes.length > 0)
+    ? providerData.serviceTypes[0]
+    : 'General Services';
 
   // Render star ratings
   const renderStars = (rating) => {
@@ -202,10 +227,8 @@ const UnifiedProfileCard = ({
       <motion.svg
         key={star}
         xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        fill={star <= rating ? '#ffc107' : '#e9ecef'}
-        className="bi bi-star-fill"
+        className="w-4 h-4 sm:w-5 sm:h-5"
+        fill={star <= rating ? '#facc15' : '#e5e7eb'}
         viewBox="0 0 16 16"
         whileHover={{ scale: 1.2 }}
         transition={{ duration: 0.2 }}
@@ -215,6 +238,7 @@ const UnifiedProfileCard = ({
     ));
   };
 
+  // Generate initials from provider name
   const getInitials = (name) => {
     return name
       .split(' ')
@@ -224,25 +248,27 @@ const UnifiedProfileCard = ({
       .slice(0, 2);
   };
 
+  // Map skills to categories
   const getSkillsForCategory = (category) => {
     const skillsMap = {
-      'Cleaning': ['Deep Cleaning', 'Sanitization', 'Carpet Care', 'Window Cleaning'],
-      'Gardening': ['Lawn Care', 'Pruning', 'Landscaping', 'Plant Care'],
-      'Plumbing': ['Pipe Fitting', 'Leak Repair', 'Drainage', 'Installation'],
-      'Electrical': ['Wiring', 'Installation', 'Repair', 'Maintenance'],
-      'HVAC': ['AC Repair', 'Installation', 'Maintenance', 'Diagnostics'],
-      'Painting': ['Interior Painting', 'Exterior Painting', 'Wall Prep', 'Color Consultation'],
-      'General': ['Home Repair', 'Maintenance', 'Installation', 'Consultation']
+      Cleaning: ['Deep Cleaning', 'Sanitization', 'Carpet Care', 'Window Cleaning'],
+      Gardening: ['Lawn Care', 'Pruning', 'Landscaping', 'Plant Care'],
+      Plumbing: ['Pipe Fitting', 'Leak Repair', 'Drainage', 'Installation'],
+      Electrical: ['Wiring', 'Installation', 'Repair', 'Maintenance'],
+      HVAC: ['AC Repair', 'Installation', 'Maintenance', 'Diagnostics'],
+      Painting: ['Interior Painting', 'Exterior Painting', 'Wall Prep', 'Color Consultation'],
+      General: ['Home Repair', 'Maintenance', 'Installation', 'Consultation'],
     };
     return skillsMap[category] || skillsMap['General'];
   };
 
+  // Generate consistent stats
   const generateStats = (providerName) => {
+    const name = providerName || ''; // Ensure providerName is a string to prevent errors
     let seed = 0;
-    const name = providerName || 'default';
     for (let i = 0; i < name.length; i++) {
       seed = ((seed << 5) - seed) + name.charCodeAt(i);
-      seed = seed & seed; 
+      seed |= 0; // Convert to 32bit integer, more conventional
     }
 
     const seededRandom = (min, max) => {
@@ -251,32 +277,23 @@ const UnifiedProfileCard = ({
       return Math.floor(rnd * (max - min + 1)) + min;
     };
 
-    const ratingMultiplier = (providerData.rating || 4.2) / 5;
-    
+    const ratingMultiplier = providerData.rating / 5;
     const baseExperience = seededRandom(1, 8);
     const experience = Math.max(1, Math.floor(baseExperience * (0.7 + ratingMultiplier * 0.6)));
-    
     const baseJobs = seededRandom(5, 150);
-    const jobsCompleted = Math.max(1, Math.floor(baseJobs * (0.5 + ratingMultiplier * 0.8)));
-    
+    const jobsCompleted = Math.floor(baseJobs * (0.5 + ratingMultiplier * 0.8));
     const baseCompletion = seededRandom(40, 95);
-    const profileCompletion = Math.max(40, Math.floor(baseCompletion * (0.7 + ratingMultiplier * 0.4)));
-    
-    const responseTime = Math.max(1, seededRandom(1, 24));
-    const successRate = Math.max(85, seededRandom(85, 99));
-    const repeatCustomers = Math.max(30, seededRandom(30, 85));
-    
-    return {
-      experience,
-      jobsCompleted,
-      profileCompletion: Math.min(profileCompletion, 98),
-      responseTime,
-      successRate,
-      repeatCustomers
-    };
+    const profileCompletion = Math.floor(baseCompletion * (0.7 + ratingMultiplier * 0.4));
+    const responseTime = seededRandom(1, 24);
+    const successRate = seededRandom(85, 99);
+    const repeatCustomers = seededRandom(30, 85);
+
+    return { experience, jobsCompleted, profileCompletion: Math.min(profileCompletion, 98), responseTime, successRate, repeatCustomers };
   };
 
-  const stats = generateStats(providerData.name || providerData.company);
+  const stats = generateStats(providerData.name);
+
+  // Format availability
   const formatAvailability = (availability) => {
     if (!availability || Object.keys(availability).length === 0) return 'Not specified';
     return Object.entries(availability)
@@ -323,17 +340,17 @@ const UnifiedProfileCard = ({
           <div className="d-flex flex-column gap-3">
             <div className="d-flex align-items-center gap-3">
               <img
-                src={providerData.profileImage || providerData.image}
+                src={providerData.profileImage}
                 alt="Profile"
                 className="rounded-circle border border-primary"
                 style={{ width: '64px', height: '64px', objectFit: 'cover' }}
                 onError={(e) => {
-                  e.target.outerHTML = `<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; font-size: 1.5rem;">${getInitials(providerData.name || providerData.company)}</div>`;
+                  e.target.outerHTML = `<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; font-size: 1.5rem;">${getInitials(providerData.name)}</div>`;
                 }}
               />
               <div>
-                <h5 className="mb-1">{providerData.name || providerData.company}</h5>
-                <p className="text-muted mb-1" style={{ fontSize: '0.875rem' }}>{providerData.description || providerData.title}</p>
+                <h5 className="mb-1">{providerData.name}</h5>
+                <p className="text-muted mb-1" style={{ fontSize: '0.875rem' }}>{providerData.description}</p>
                 <div className="d-flex align-items-center gap-1">
                   {renderStars(providerData.rating)}
                   <span className="ms-1" style={{ fontSize: '0.875rem' }}>({providerData.rating})</span>
@@ -391,8 +408,8 @@ const UnifiedProfileCard = ({
               <div>
                 <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>Skills</span>
                 <div className="d-flex flex-wrap gap-2 mt-2">
-                  <Badge bg="primary">{providerData.serviceTypes?.[0] || providerData.category || 'General Services'}</Badge>
-                  {getSkillsForCategory(providerData.serviceTypes?.[0] || providerData.category || 'General').slice(0, 4).map((skill, index) => (
+                  <Badge bg="primary">{primaryService}</Badge>
+                  {getSkillsForCategory(primaryService).slice(0, 4).map((skill, index) => (
                     <Badge key={index} bg="secondary">{skill}</Badge>
                   ))}
                 </div>
@@ -445,7 +462,7 @@ const UnifiedProfileCard = ({
                   />
                 ) : (
                   <motion.div
-                    className="rounded-full bg-white/50 text-indigo-900 flex items-center justify-content-center w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 text-xl sm:text-2xl font-semibold"
+                    className="rounded-full bg-white/50 text-indigo-900 flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 text-xl sm:text-2xl font-semibold"
                     whileHover={{ scale: 1.1 }}
                     transition={{ duration: 0.2 }}
                   >
@@ -473,7 +490,9 @@ const UnifiedProfileCard = ({
                 {[
                   { icon: 'bi-envelope', label: 'Email', value: providerData.email },
                   { icon: 'bi-telephone', label: 'Phone', value: providerData.phoneNumber || 'Not specified' },
-                  { icon: 'bi-geo-alt', label: 'Location', value: providerData.location || 'Not specified' },
+                  { icon: 'bi-geo-alt', label: 'Location', value: providerData.city && providerData.state
+                    ? `${providerData.city}, ${providerData.state}`
+                    : 'Location not specified' },
                   { icon: 'bi-currency-dollar', label: 'Pricing Model', value: providerData.pricingModel || 'Not specified' },
                   { icon: 'bi-clock', label: 'Availability', value: formatAvailability(providerData.availability) },
                 ].map((item, index) => (
@@ -491,6 +510,16 @@ const UnifiedProfileCard = ({
                   </motion.div>
                 ))}
               </div>
+            </motion.div>
+            {/* Map Section */}
+            <motion.div
+              className="bg-white p-4 rounded-lg shadow-sm"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+            >
+              <h3 className="text-lg font-bold text-indigo-900 mb-4">Provider Location</h3>
+              <Map city={providerData.city} state={providerData.state} />
             </motion.div>
 
             <motion.div
@@ -555,7 +584,7 @@ const UnifiedProfileCard = ({
                   whileHover={{ scale: 1.03 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="text-base font-bold text-indigo-600">{stats.successRate}%</div>
+                  <div className="text-base font-bold text-green-600">{stats.successRate}%</div>
                   <div className="text-xs sm:text-sm text-gray-600">Success Rate</div>
                 </motion.div>
               </div>
@@ -584,9 +613,9 @@ const UnifiedProfileCard = ({
                     whileHover={{ scale: 1.1 }}
                     transition={{ duration: 0.2 }}
                   >
-                    {providerData.serviceTypes?.[0] || 'General Services'}
+                    {primaryService}
                   </motion.span>
-                  {getSkillsForCategory(providerData.serviceTypes?.[0] || 'General')
+                  {getSkillsForCategory(primaryService)
                     .slice(0, 4)
                     .map((skill, index) => (
                       <motion.span
@@ -605,17 +634,20 @@ const UnifiedProfileCard = ({
         </div>
       </motion.div>
 
-      {mode === 'edit' && (
-        <EditProviderModal
-          showEditModal={showEditModal}
-          setShowEditModal={setShowEditModal}
-          formData={formData}
-          setFormData={setFormData}
-          handleInputChange={handleInputChange}
-          handleUpdate={handleUpdate}
-          loading={loading}
-        />
-      )}
+      {/* Pass location data and error handlers to the modal */}
+      <EditProviderModal
+        showEditModal={showEditModal}
+        setShowEditModal={setShowEditModal}
+        formData={formData}
+        setFormData={setFormData}
+        handleInputChange={handleInputChange}
+        handleUpdate={handleUpdate}
+        loading={loading}
+        states={states}
+        cities={cities}
+        stateError={stateError}
+        cityError={cityError}
+      />
     </>
   );
 };

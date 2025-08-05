@@ -15,9 +15,7 @@ const hardcodedServices = [
     category: 'Cleaning',
     image: 'https://cdn.pixabay.com/photo/2017/07/25/09/08/the-push-rod-2537315_1280.jpg'
   },
- main
 ];
-
 const FeaturedServices = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
