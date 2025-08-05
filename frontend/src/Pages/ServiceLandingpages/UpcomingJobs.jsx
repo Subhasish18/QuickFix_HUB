@@ -7,7 +7,8 @@ const UpcomingJobsCard = () => {
       id: "job-4",
       customer: "Laura Martinez",
       type: "Water Heater Service",
-      address: "456 Elm Street, Lakewood",
+      city: "Lakewood",
+      state: "California",
       date: "May 4, 2025",
       time: "2:00 PM - 4:30 PM",
     },
@@ -62,7 +63,9 @@ const UpcomingJobsCard = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <i className="bi bi-geo-alt text-indigo-600"></i>
-                    <span>{job.address}</span>
+                    <span>
+                      {job.city && job.state ? `${job.city}, ${job.state}` : 'Location not specified'}
+                    </span>
                   </div>
                 </div>
               </motion.div>

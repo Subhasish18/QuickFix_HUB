@@ -9,7 +9,11 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, unique: true, required: true, lowercase: true, trim: true },
   phoneNumber: { type: String },
-  location: { type: String },
+
+  // ✅ Replaced single location with city & state for API-based dropdown
+  city: { type: String, required: true },
+  state: { type: String, required: true },
+
   role: { 
     type: String, 
     enum: ['user'], 

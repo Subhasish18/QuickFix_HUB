@@ -1,23 +1,32 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { getAuth } from 'firebase/auth';
+import Map from '../Components/Map';
 
 const CompletedJobsCard = () => {
   const [completedJobs, setCompletedJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const providerId = localStorage.getItem('userId');
-
   useEffect(() => {
     const fetchCompletedJobs = async () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(`http://localhost:5000/api/provider-bookings/provider/${providerId}`);
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (!user) {
+          setError('You must be logged in.');
+          setLoading(false);
+          return;
+        }
+        const token = await user.getIdToken();
+        const response = await fetch('http://localhost:5000/api/provider-bookings', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         if (!response.ok) throw new Error('Failed to fetch completed jobs');
         const data = await response.json();
-        // Filter for completed jobs only
         setCompletedJobs((data.bookings || []).filter(job => job.status === 'completed'));
         setLoading(false);
       } catch (err) {
@@ -25,8 +34,8 @@ const CompletedJobsCard = () => {
         setLoading(false);
       }
     };
-    if (providerId) fetchCompletedJobs();
-  }, [providerId]);
+    fetchCompletedJobs();
+  }, []);
 
   const renderStars = (rating) => {
     return Array(5).fill(0).map((_, i) => (
@@ -91,9 +100,28 @@ const CompletedJobsCard = () => {
                             : job.date}
                         </span>
                       </div>
-                      <h3 className="text-base font-semibold text-gray-800 mt-2">{job.serviceDetails || job.type}</h3>
+                      <h3 className="text-base font-semibold text-gray-800 mt-2">
+                        {job.serviceDetails || job.type}
+                      </h3>
                       <p className="text-sm text-gray-600 mb-1">{job.customer || job.userId?.name || ''}</p>
-                      {/* Optionally, add rating/feedback here if available */}
+                      <p className="text-sm text-gray-600 mb-1">
+                        {job.address
+                          ? `${job.address}${job.city && job.state ? `, ${job.city}, ${job.state}` : ''}`
+                          : job.city && job.state
+                            ? `${job.city}, ${job.state}`
+                            : job.userId?.city && job.userId?.state
+                              ? `${job.userId.city}, ${job.userId.state}`
+                              : 'Location not specified'}
+                      </p>
+
+                      {job.userId?.city && job.userId?.state && (
+                        <div className="mt-4">
+                          {/* Responsive map container */}
+                          <div style={{ width: '100%', aspectRatio: '16/9', minHeight: '200px' }}>
+                            <Map city={job.userId.city} state={job.userId.state} />
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <span className="text-base font-semibold text-green-600">
                       {job.price ? `₹${job.price}` : ''}

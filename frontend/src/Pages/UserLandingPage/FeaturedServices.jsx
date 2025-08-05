@@ -5,14 +5,17 @@ import './FeaturedServices.css';
 
 const hardcodedServices = [
   {
+    id: 'hardcoded-1',
     title: 'Professional House Cleaning',
     company: 'CleanPro Services',
-    location: 'Downtown',
+    city: 'Downtown',
+    state: 'Delhi',
     price: '$25/hr',
     rating: 4.8,
     category: 'Cleaning',
     image: 'https://cdn.pixabay.com/photo/2017/07/25/09/08/the-push-rod-2537315_1280.jpg'
   },
+ main
 ];
 
 const FeaturedServices = () => {
@@ -48,15 +51,16 @@ const FeaturedServices = () => {
         }
 
         const formattedProviders = providers.map(provider => {
-          console.log('Processing provider:', provider);
           return {
+            id: provider._id, // Add this line
             title: provider.services?.[0]?.title || `${provider.category} Services`,
             company: provider.name || 'Service Provider',
-            location: provider.location || 'Available',
+            city: provider.city || 'Unknown',
+            state: provider.state || 'Unknown',
             price: provider.services?.[0]?.price || provider.pricingModel || 'Contact for pricing',
             rating: provider.rating || 4.5,
             category: provider.category || 'General',
-            image: provider.profileImage || 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?t=st=1750000733~exp=1750004333~hmac=a11b1198bb1f20a16349cc3ce40040f12852cedb1ee82db5d3f44bd1fd365551&w=1380',
+            image: provider.profileImage || 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg',
             isRealProvider: true 
           };
         });
@@ -217,7 +221,9 @@ const FeaturedServices = () => {
               </p>
               <p className="service-location">
                 <FaMapMarkerAlt className="service-location-icon" />
-                {service.location}
+                {service.city && service.state
+                  ? `${service.city}, ${service.state}`
+                  : 'Location not specified'}
               </p>
               <div className="service-divider"></div>
               <div className="service-footer">

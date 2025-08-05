@@ -1,0 +1,1 @@
+This is a MERN stack project. The backend is in the `backend` directory and the frontend is in the `frontend` directory. To run the project, you need to run `npm install` and `npm start` in both directories.

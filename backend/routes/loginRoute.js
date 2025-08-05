@@ -8,7 +8,20 @@ const router = express.Router();
 // Login route for Firebase Auth
 router.post('/', async (req, res) => {
   try {
-    // Get the Firebase ID token from the Authorization header
+    const { email, password } = req.body;
+   
+    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+      
+      return res.status(200).json({
+        message: 'Admin login successful',
+        user: {
+          email: email,
+          role: 'admin',
+        },
+      });
+    }
+
+    // If not admin, proceed with Firebase authentication
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ message: 'No token provided' });

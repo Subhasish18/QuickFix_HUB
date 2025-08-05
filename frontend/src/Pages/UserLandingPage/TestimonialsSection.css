@@ -48,6 +48,12 @@
   
   @media (min-width: 768px) {
     .cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .cards {
       grid-template-columns: repeat(3, 1fr);
     }
   }
@@ -124,5 +130,15 @@
   
   .read-more a:hover {
     color: #1d4ed8; /* blue-800 */
+  }
+
+  @media (max-width: 480px) {
+    .title {
+      font-size: 1.75rem;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+    }
   }
   

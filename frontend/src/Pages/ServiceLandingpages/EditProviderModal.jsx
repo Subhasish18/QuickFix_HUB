@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import React from 'react';
 
 const EditProviderModal = ({
   showEditModal,
@@ -9,6 +10,10 @@ const EditProviderModal = ({
   handleInputChange,
   handleUpdate,
   loading,
+  states,
+  cities,
+  stateError, // <-- pass from parent if you want
+  cityError,  // <-- pass from parent if you want
 }) => {
   return (
     <AnimatePresence>
@@ -53,7 +58,8 @@ const EditProviderModal = ({
                   placeholder: 'mon: 9:00-17:00; tue: 10:00-18:00',
                 },
                 { label: 'Service Types (comma-separated)', name: 'serviceTypes', type: 'text' },
-                { label: 'Location', name: 'location', type: 'text' },
+                { label: 'State', name: 'state', type: 'select', options: states, optionKey: 'iso2', optionLabel: 'name' },
+                { label: 'City', name: 'city', type: 'select', options: cities, optionKey: 'id', optionLabel: 'name' },
               ].map((field, index) => (
                 <motion.div
                   key={field.name}
@@ -71,6 +77,31 @@ const EditProviderModal = ({
                       className="mt-1 p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base"
                       required={field.required}
                     />
+                  ) : field.type === 'select' ? (
+                    <>
+                      <select
+                        name={field.name}
+                        value={formData[field.name]}
+                        onChange={handleInputChange}
+                        className="mt-1 p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base"
+                        required={field.required}
+                        disabled={field.name === 'city' && !formData.state}
+                      >
+                        <option value="">Select {field.label}</option>
+                        {field.options.map((option) => (
+                          <option key={option[field.optionKey]} value={option[field.optionLabel]}>
+                            {option[field.optionLabel]}
+                          </option>
+                        ))}
+                      </select>
+                      {/* Error message for states/cities */}
+                      {field.name === 'state' && stateError && (
+                        <span className="text-xs text-red-600 mt-1">{stateError}</span>
+                      )}
+                      {field.name === 'city' && cityError && (
+                        <span className="text-xs text-red-600 mt-1">{cityError}</span>
+                      )}
+                    </>
                   ) : (
                     <>
                       <input

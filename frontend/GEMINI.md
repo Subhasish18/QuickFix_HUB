@@ -1,0 +1,1 @@
+This is a React project. Use `npm install` to install dependencies and `npm run dev` to start the development server. The main component is `App.jsx`.

@@ -30,6 +30,11 @@ const BookPage = () => {
         
 
         <h1 className="h2 fw-bold mb-4">Service Provider Dashboard</h1>
+        {selectedService?.city && selectedService?.state && (
+          <div className="mb-2 text-muted">
+            Location: {selectedService.city}, {selectedService.state}
+          </div>
+        )}
 
         <div className="row g-4">
           <div className="col-12 col-md-4">

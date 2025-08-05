@@ -317,6 +317,11 @@
   .pagination-btn {
     min-width: 120px;
   }
+
+  .services-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -332,5 +337,9 @@
   .services-grid {
     grid-template-columns: 1fr;
     gap: 20px;
+  }
+
+  .featured-title {
+    font-size: 28px;
   }
 }
