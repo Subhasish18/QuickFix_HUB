@@ -17,6 +17,7 @@ const RatingsCard = ({ providerId = 'default' }) => {
     try {
       const response = await axios.get(`http://localhost:5000/api/reviews/${providerId}`);
       setRecentReviews(response.data);
+      console.log(`[Booking Page] Fetched ${response.data.length} reviews for provider ${providerId}`);
     } catch (error) {
       console.error('Error fetching reviews:', error);
     }
@@ -56,7 +57,7 @@ const RatingsCard = ({ providerId = 'default' }) => {
     const fourStarCount = Math.floor(total * (fourStarBase + seededRandom(seed + 3) * 10) / 100);
     const threeStarCount = Math.floor(total * (threeStarBase + seededRandom(seed + 4) * 5) / 100);
     const twoStarCount = Math.floor(total * (twoStarBase + seededRandom(seed + 5) * 3) / 100);
-    const oneStarCount = total - fiveStarCount - fourStarCount - threeStarCount - twoStarCount;
+    const oneStarCount = total - fiveStarCount - fourStarCount;
     
     const distribution = [
       { stars: 5, count: fiveStarCount, percentage: Math.round((fiveStarCount / total) * 100) },
@@ -130,6 +131,9 @@ const RatingsCard = ({ providerId = 'default' }) => {
         rating: userRating,
         comment: userReview,
       };
+      
+      console.log('[Booking Page] Submitting review with data:', reviewData);
+      console.log('[Booking Page] Provider ID type:', typeof providerId, 'Value:', providerId);
 
       const headers = {
         'Content-Type': 'application/json',
@@ -145,7 +149,13 @@ const RatingsCard = ({ providerId = 'default' }) => {
         setUserRating(0);
         setUserReview('');
         setHoveredStar(0);
-        fetchReviews(); 
+        fetchReviews();
+        
+        window.dispatchEvent(new CustomEvent('reviewSubmitted', {
+          detail: { providerId, rating: userRating, comment: userReview }
+        }));
+        
+        console.log(`[Booking Page] Review submitted for provider ${providerId}`);
       }
     } catch (error) {
       console.error('Error submitting review:', error);
@@ -166,6 +176,7 @@ const RatingsCard = ({ providerId = 'default' }) => {
     <Card className="shadow-sm">
       <Card.Header>
         <Card.Title as="h5" className="mb-0">Ratings & Reviews</Card.Title>
+        <small className="text-muted">Leave your feedback for this provider</small>
       </Card.Header>
       <Card.Body>
         <div className="row align-items-center">

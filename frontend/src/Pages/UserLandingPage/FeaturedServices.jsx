@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaStar, FaBuilding, FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaPlay, FaPause } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './FeaturedServices.css';
 
@@ -16,76 +15,10 @@ const hardcodedServices = [
     category: 'Cleaning',
     image: 'https://cdn.pixabay.com/photo/2017/07/25/09/08/the-push-rod-2537315_1280.jpg'
   },
-  {
-    id: 'hardcoded-2',
-    title: 'Garden & Lawn Maintenance',
-    company: 'Green Thumb',
-    city: 'Suburbs',
-    state: 'Delhi',
-    price: '$30/hr',
-    rating: 4.7,
-    category: 'Gardening',
-    image: 'https://cdn.pixabay.com/photo/2021/11/14/18/30/woman-6795430_1280.jpg'
-  },
-  {
-    id: 'hardcoded-3',
-    title: 'Plumbing Repair Services',
-    company: 'Quick Fix Plumbing',
-    city: 'Citywide',
-    state: 'Delhi',
-    price: '$45/hr',
-    rating: 4.9,
-    category: 'Plumbing',
-    image: 'https://media.istockphoto.com/id/1516511531/photo/a-plumber-carefully-fixes-a-leak-in-a-sink-using-a-wrench.jpg?s=1024x1024&w=is&k=20&c=LkKMuHe7Uj0PjkyC0bn7HEQmQ8Iidl8B8_rqFiPSS2A='
-  },
-  {
-    id: 'hardcoded-4',
-    title: 'Home Electric & Wiring',
-    company: 'Bright Spark Electric',
-    city: 'North Side',
-    state: 'Delhi',
-    price: '$40/hr',
-    rating: 4.6,
-    category: 'Electrical',
-    image: 'https://media.istockphoto.com/id/1049775258/photo/smiling-handsome-electrician-repairing-electrical-box-with-pliers-in-corridor-and-looking-at.jpg?s=1024x1024&w=is&k=20&c=I8Fxr-SRoAovM3W5Ijd36Vv3cYFqrEErd6mKvPUjmzs='
-  },
-  {
-    id: 'hardcoded-5',
-    title: 'Air Conditioning Repair',
-    company: 'Cool Air Solutions',
-    city: 'East Side',
-    state: 'Delhi',
-    price: '$50/hr',
-    rating: 4.8,
-    category: 'HVAC',
-    image: 'https://media.istockphoto.com/id/1208084866/photo/repairer-repairing-air-conditioner.jpg?s=2048x2048&w=is&k=20&c=atDOzqy_3mb7Gp2sAxhSVPRIzqHfqVFH4pV4SSFeZDY='
-  },
-  {
-    id: 'hardcoded-6',
-    title: 'Interior Painting',
-    company: 'Perfect Paint Co.',
-    city: 'West Side',
-    state: 'Delhi',
-    price: '$35/hr',
-    rating: 4.7,
-    category: 'Painting',
-    image: 'https://media.istockphoto.com/id/2190057704/photo/man-painting-living-room-wall-during-apartment-renovation.jpg?s=2048x2048&w=is&k=20&c=0-yruU4lb69Rlf-xTEQ6yAr__xyEFo-L5wloyWWbv5A='
-  },
-  {
-    id: 'hardcoded-7',
-    title: 'Carpet Cleaning Service',
-    company: 'Fresh Carpet Care',
-    city: 'South Side',
-    state: 'Delhi',
-    price: '$28/hr',
-    rating: 4.5,
-    category: 'Cleaning',
-    image: 'https://media.istockphoto.com/id/1417833187/photo/professional-cleaner-vacuuming-a-carpet.jpg?s=612x612&w=0&k=20&c=5h8NBR190d46Ni4MclqJ7Zf9ZOtf3TM3gPRJaHUdMjk='
-  }
+ main
 ];
 
 const FeaturedServices = () => {
-  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const [dynamicProviders, setDynamicProviders] = useState([]);
@@ -96,9 +29,7 @@ const FeaturedServices = () => {
   const SCROLL_DELAY = 5000;
   
 
-  const handleCardClick = (service) => {
-    navigate('/book', { state: { service } });
-  };
+  // Cards are display-only - no navigation functionality
   
 
 
@@ -259,6 +190,7 @@ const FeaturedServices = () => {
   return (
     <section className="featured-section">
       <h2 className="featured-title">Featured Services</h2>
+      <h3 className='featured-subtitle'>Showcasing some of our newly joined providers.</h3>
       <div className="pagination-header">
         <div className="pagination-info">
           <span>Showing {startIndex + 1}-{Math.min(endIndex, services.length)} of {services.length} services</span>
@@ -275,15 +207,7 @@ const FeaturedServices = () => {
         {currentServices.map((service, idx) => (
           <div 
             key={startIndex + idx} 
-            className="service-card clickable" 
-            tabIndex="0"
-            onClick={() => handleCardClick(service)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                handleCardClick(service);
-              }
-            }}
-            style={{ cursor: 'pointer' }}
+            className="service-card display-only"
           >
             <div className="service-image-container">
               <img src={service.image} alt={service.title} className="service-image" />

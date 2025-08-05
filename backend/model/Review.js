@@ -2,8 +2,7 @@ import mongoose from 'mongoose';
 
 const reviewSchema = new mongoose.Schema({
     providerId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'ServiceProvider',
+      type: String,
       required: true
     },
     userId: {

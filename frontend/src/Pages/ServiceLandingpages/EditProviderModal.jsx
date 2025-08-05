@@ -26,7 +26,7 @@ const EditProviderModal = ({
           transition={{ duration: 0.3 }}
         >
           <motion.div
-            className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-4 sm:p-6 w-full max-w-md sm:max-w-lg"
+            className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-4 sm:p-6 w-full max-w-md sm:max-w-2xl max-h-[90vh] overflow-y-auto"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
@@ -48,7 +48,7 @@ const EditProviderModal = ({
                 { label: 'Name', name: 'name', type: 'text', required: true },
                 { label: 'Email', name: 'email', type: 'email', required: true },
                 { label: 'Phone Number', name: 'phoneNumber', type: 'tel' },
-                { label: 'Profile Image URL', name: 'profileImage', type: 'url' },
+{ label: 'Profile Image URL', name: 'profileImage', type: 'url', placeholder: 'Enter image URL (e.g., https://example.com/image.jpg)' },
                 { label: 'Description', name: 'description', type: 'textarea' },
                 { label: 'Pricing Model (e.g., hourly, fixed)', name: 'pricingModel', type: 'text' },
                 {
@@ -103,15 +103,37 @@ const EditProviderModal = ({
                       )}
                     </>
                   ) : (
-                    <input
-                      type={field.type}
-                      name={field.name}
-                      value={formData[field.name]}
-                      onChange={handleInputChange}
-                      placeholder={field.placeholder}
-                      className="mt-1 p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base"
-                      required={field.required}
-                    />
+                    <>
+                      <input
+                        type={field.type}
+                        name={field.name}
+                        value={formData[field.name]}
+                        onChange={handleInputChange}
+                        placeholder={field.placeholder}
+                        className="mt-1 p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base"
+                        required={field.required}
+                      />
+                      {field.name === 'profileImage' && formData.profileImage && (
+                        <div className="mt-2">
+                          <p className="text-xs text-gray-500 mb-2">Preview:</p>
+                          <img
+                            src={formData.profileImage}
+                            alt="Profile preview"
+                            className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'block';
+                            }}
+                          />
+                          <div 
+                            className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs" 
+                            style={{display: 'none'}}
+                          >
+                            Invalid URL
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </motion.div>
               ))}
