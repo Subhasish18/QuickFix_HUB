@@ -1,5 +1,6 @@
 import { Card, Badge, ProgressBar } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Map from '../Components/Map'; // Import the Map component
 
 const ProfileCard = ({ serviceData }) => {
   
@@ -123,6 +124,21 @@ const ProfileCard = ({ serviceData }) => {
               </div>
             </div>
           </div>
+
+          <div className="d-flex align-items-center gap-2 mb-2">
+            <span className="fw-medium text-muted">Location:</span>
+            <span>
+              {provider.city && provider.state
+                ? `${provider.city}, ${provider.state}`
+                : 'Location not specified'}
+            </span>
+          </div>
+
+          {provider.city && provider.state && (
+            <div className="mt-4" style={{ height: '200px' }}>
+              <Map city={provider.city} state={provider.state} />
+            </div>
+          )}
 
           <div className="row g-3">
             <div className="col-6">

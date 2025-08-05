@@ -5,11 +5,8 @@ const router = express.Router();
 
 // Route to create a new booking
 router.post('/', async (req, res) => {
-  const { userId, serviceId, scheduledTime, serviceDetails } = req.body;
+  const { userId, serviceId, scheduledTime, serviceDetails, address, city, state } = req.body;
 
-  console.log('userId:', userId);
-  console.log('serviceId:', serviceId);
-  
   // Validate required fields
   if (!userId || !serviceId || !scheduledTime || !serviceDetails) {
     return res.status(400).json({ message: 'All fields are required' });
@@ -21,6 +18,9 @@ router.post('/', async (req, res) => {
       serviceId,
       scheduledTime: new Date(scheduledTime),
       serviceDetails,
+      address, // Save address if provided
+      city,    // Save city if provided
+      state    // Save state if provided
     });
 
     await newBooking.save();

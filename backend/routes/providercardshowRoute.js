@@ -16,7 +16,9 @@ router.get('/', async (req, res) => {
       id: provider._id,
       name: provider.name,
       category: provider.serviceTypes?.[0] || 'General Service',
-      location: provider.location || 'Location not specified',
+      location: (provider.city && provider.state)
+        ? `${provider.city}, ${provider.state}`
+        : 'Location not specified',
       profileImage: provider.profileImage || 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg',
       rating: provider.rating || 4.5, // Static fallback rating
       description: provider.description || 'Professional service provider',
@@ -27,6 +29,7 @@ router.get('/', async (req, res) => {
         price: provider.pricingModel || 'Contact for pricing'
       }]
     }));
+
     // Send the formatted result as a success response
     res.status(200).json(formattedProviders);
   } catch (error) {
@@ -34,9 +37,9 @@ router.get('/', async (req, res) => {
     console.error('Error fetching providers:', error.message, error.stack);
 
     // Send a generic server error response
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: 'Failed to fetch providers' 
+      message: 'Failed to fetch providers'
     });
   }
 });

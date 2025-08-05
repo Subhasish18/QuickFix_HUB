@@ -162,3 +162,17 @@
 .hiw-button:hover {
   background-color: #1d4ed8;
 }
+
+@media (max-width: 480px) {
+  .hiw-title {
+    font-size: 1.75rem;
+  }
+
+  .hiw-subtitle {
+    font-size: 1rem;
+  }
+
+  .hiw-step {
+    max-width: 100%;
+  }
+}

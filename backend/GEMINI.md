@@ -1,0 +1,1 @@
+This is a Node.js project with an Express server. Use `npm install` to install dependencies and `npm start` to start the server. The main file is `index.js`.
