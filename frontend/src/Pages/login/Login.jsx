@@ -25,24 +25,61 @@ const Login = () => {
     setError('');
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      const idToken = await user.getIdToken();
-
-      // Store user id in localStorage
-      const response = await axios.post('http://localhost:5000/api/login', {}, {
-        headers: { Authorization: `Bearer ${idToken}` },
+      // Step 1: Attempt admin login by sending credentials directly to the backend.
+      const response = await axios.post('http://localhost:5000/api/login', {
+        email,
+        password,
       });
-      localStorage.setItem('userId', response.data.user.id);
 
-      alert('Login successful!');
-      navigate('/');
-    } catch (err) {
-      setError(err.message);
+      // If the backend identifies the user as an admin, handle admin login.
+      if (response.data.user && response.data.user.role === 'admin') {
+        localStorage.setItem('userData', JSON.stringify(response.data.user));
+        alert('Admin login successful!');
+        navigate('/admin'); // Redirect to the admin dashboard
+      } else {
+        // This case should not be reached if the backend is correct, but we throw to be safe.
+        throw new Error('Not an admin.');
+      }
+    } catch (adminError) {
+      // Step 2: If admin login fails, proceed with Firebase authentication for regular users.
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        const idToken = await user.getIdToken();
+
+        // Call the backend with the Firebase token to get the user's DB profile.
+        const loginResponse = await axios.post('http://localhost:5000/api/login', {}, {
+          headers: { Authorization: `Bearer ${idToken}` },
+        });
+
+        // Store the full user data (profile + role) from the backend.
+        localStorage.setItem('userData', JSON.stringify(loginResponse.data.user));
+
+        alert('Login successful!');
+        navigate('/'); // Redirect to the homepage
+      } catch (firebaseError) {
+        // Provide user-friendly error messages for common Firebase auth issues.
+        let errorMessage = 'Failed to log in. Please check your credentials.';
+        if (firebaseError.code) {
+          switch (firebaseError.code) {
+            case 'auth/user-not-found':
+              errorMessage = 'No account found with this email. Please sign up.';
+              break;
+            case 'auth/wrong-password':
+            case 'auth/invalid-credential':
+              errorMessage = 'Incorrect email or password. Please try again.';
+              break;
+            default:
+              errorMessage = 'An unexpected error occurred. Please try again.';
+          }
+        }
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -53,14 +90,15 @@ const Login = () => {
       const user = result.user;
       const idToken = await user.getIdToken();
 
-      // Store user id in localStorage
-      localStorage.setItem('userId', user.uid);
-
-      await axios.post('http://localhost:5000/api/login', {}, {
+      // Call the backend with the token to get the user's full profile from the DB.
+      const response = await axios.post('http://localhost:5000/api/login', {}, {
         headers: {
           Authorization: `Bearer ${idToken}`,
         },
       });
+
+      // Store the complete user data from the backend response.
+      localStorage.setItem('userData', JSON.stringify(response.data.user));
 
       alert('Signed in with Google!');
       navigate('/');
