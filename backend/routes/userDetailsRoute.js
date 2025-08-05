@@ -1,8 +1,7 @@
 import express from 'express';
-import User from '../model/User.js'; // Import the updated User model
-// userDetailsRoute.js
+import User from '../model/User.js';
 import ServiceProvider from '../model/ServiceProvider.js';
-import { verifyFirebaseToken } from '../middleware/AuthMiddleware.js';
+import { verifyFirebaseToken } from '../middleware/authMiddleware.js'; // Ensure this middleware is correctly set up
 
 
 const router = express.Router();
