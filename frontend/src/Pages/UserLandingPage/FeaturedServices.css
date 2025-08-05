@@ -11,6 +11,13 @@
   text-align: center;
   position: relative;
 }
+.featured-subtitle {
+  font-size: 18px;
+  font-weight: 400;
+  color: #475569;
+  margin-bottom: 32px;
+  text-align: center;
+}
 
 .featured-title:after {
   content: '';
