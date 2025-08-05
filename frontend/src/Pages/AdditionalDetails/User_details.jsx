@@ -1,69 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // For redirection
-import { getAuth } from 'firebase/auth'; // Firebase Authentication
+import { useNavigate } from 'react-router-dom';
+import { getAuth } from 'firebase/auth';
 import Footer from '../UserLandingPage/Footer';
 import Navbar from '../UserLandingPage/Navbar';
 
+const CSC_API_KEY = import.meta.env.VITE_CSC_API_KEY; // Use your actual API key
+
 const UserDetails = () => {
-  // State to store form input values - removed role from state
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phoneNumber: '',
-    location: '',
+    state: '',
+    city: '',
   });
 
-  const navigate = useNavigate(); // Hook for redirection
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const navigate = useNavigate();
 
-  // Update form data state on each input change
+  // Fetch states on mount
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const response = await axios.get(
+          'https://api.countrystatecity.in/v1/countries/IN/states',
+          { headers: { 'X-CSCAPI-KEY': CSC_API_KEY } }
+        );
+        setStates(response.data || []);
+      } catch (err) {
+        console.error('❌ Error fetching states:', err);
+        setStates([]);
+      }
+    };
+    fetchStates();
+  }, []);
+
+  // Fetch cities when state changes
+  useEffect(() => {
+    if (!formData.state) {
+      setCities([]);
+      return;
+    }
+    const selectedState = states.find(s => s.name === formData.state);
+    if (!selectedState) {
+      setCities([]);
+      return;
+    }
+    const fetchCities = async () => {
+      try {
+        const response = await axios.get(
+          `https://api.countrystatecity.in/v1/countries/IN/states/${selectedState.iso2}/cities`,
+          { headers: { 'X-CSCAPI-KEY': CSC_API_KEY } }
+        );
+        setCities(response.data || []);
+      } catch (err) {
+        console.error('❌ Error fetching cities:', err);
+        setCities([]);
+      }
+    };
+    fetchCities();
+  }, [formData.state, states]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // Step 1: Get current Firebase user
       const auth = getAuth();
       const user = auth.currentUser;
 
-      // If user is not logged in, stop here
       if (!user) {
         alert("You must be logged in to submit details.");
         return;
       }
 
-      // Step 2: Get Firebase ID token
       const idToken = await user.getIdToken();
 
-      // Step 3: Send POST request with Authorization header
-      // Role will automatically default to 'user' from backend schema
       const res = await axios.post(
         'http://localhost:5000/api/user-details',
-        formData, // Only sending name, email, phoneNumber, location
+        formData,
         {
-          headers: {
-            Authorization: `Bearer ${idToken}`, // Pass token to backend
-          },
+          headers: { Authorization: `Bearer ${idToken}` },
         }
       );
 
-      // Success: Show message and redirect
       alert(res.data.message);
       navigate('/');
-
     } catch (err) {
       console.error('Error submitting user details:', err);
-
-      // Show specific backend error if available
-      if (err.response?.data?.message) {
-        alert(err.response.data.message);
-      } else {
-        alert('Failed to submit user details. Please try again.');
-      }
+      alert(err.response?.data?.message || 'Failed to submit user details. Please try again.');
     }
   };
 
@@ -84,7 +114,6 @@ const UserDetails = () => {
                 placeholder="Enter your name"
                 required
                 className="form-control"
-                autoComplete="off"
               />
             </div>
             <div className="mb-3">
@@ -98,7 +127,6 @@ const UserDetails = () => {
                 placeholder="Enter your email"
                 required
                 className="form-control"
-                autoComplete="off"
               />
             </div>
             <div className="mb-3">
@@ -110,20 +138,38 @@ const UserDetails = () => {
                 value={formData.phoneNumber}
                 placeholder="Enter your phone number"
                 className="form-control"
-                autoComplete="off"
               />
             </div>
-            <div className="mb-4">
-              <label htmlFor="location" className="form-label fw-semibold">Location</label>
-              <input
-                id="location"
-                name="location"
+            <div className="mb-3">
+              <label htmlFor="state" className="form-label fw-semibold">State</label>
+              <select
+                id="state"
+                name="state"
+                value={formData.state}
                 onChange={handleChange}
-                value={formData.location}
-                placeholder="Enter your location"
                 className="form-control"
-                autoComplete="off"
-              />
+              >
+                <option value="">Select State</option>
+                {states.map((state) => (
+                  <option key={state.iso2} value={state.name}>{state.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-4">
+              <label htmlFor="city" className="form-label fw-semibold">City</label>
+              <select
+                id="city"
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                className="form-control"
+                disabled={!formData.state}
+              >
+                <option value="">Select City</option>
+                {cities.map((city) => (
+                  <option key={city.id} value={city.name}>{city.name}</option>
+                ))}
+              </select>
             </div>
             <button type="submit" className="btn btn-primary w-100 fw-bold">
               Submit Details

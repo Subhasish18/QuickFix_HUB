@@ -8,16 +8,17 @@ const BookingForm = ({ serviceId }) => {
   });
   const [loading, setLoading] = useState(false);
 
-  // Get userId from localStorage (key: 'userid')
   const userId = localStorage.getItem('userId');
 
-  const handleChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
       if (!serviceId || !userId) {
         alert('Service ID or User ID is missing!');
@@ -25,17 +26,20 @@ const BookingForm = ({ serviceId }) => {
         return;
       }
 
-      const payload = {
+      const { scheduledTime, serviceDetails } = form;
+      const bookingData = {
         userId,
         serviceId,
-        scheduledTime: form.scheduledTime,
-        serviceDetails: form.serviceDetails
+        scheduledTime,
+        serviceDetails
       };
 
-      const res = await axios.post('http://localhost:5000/api/bookings', payload);
+      const res = await axios.post('http://localhost:5000/api/bookings', bookingData);
       alert(res.data.message || 'Booking successful!');
+
       setForm({ scheduledTime: '', serviceDetails: '' });
     } catch (err) {
+      console.error('Booking failed:', err);
       alert('Booking failed!');
     } finally {
       setLoading(false);
@@ -57,6 +61,7 @@ const BookingForm = ({ serviceId }) => {
             required
           />
         </div>
+
         <div className="mb-3">
           <label className="form-label">Details of Service Required</label>
           <textarea
@@ -68,6 +73,7 @@ const BookingForm = ({ serviceId }) => {
             required
           />
         </div>
+
         <button type="submit" className="btn btn-primary w-100" disabled={loading}>
           {loading ? 'Booking...' : 'Book Now'}
         </button>

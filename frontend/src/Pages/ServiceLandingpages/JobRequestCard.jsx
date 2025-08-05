@@ -1,44 +1,43 @@
+import { getAuth } from 'firebase/auth';
+import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import Map from '../Components/Map'; // Import the Map component
 
 const JobRequestsCard = () => {
-  // Get providerId from localStorage (stored as 'userid')
-  const providerId = localStorage.getItem('userId');
- console.log('Provider ID:', providerId);
-  const [requests, setRequests] = useState([]);
+  const [jobRequests, setJobRequests] = useState([]);
   const [activeTab, setActiveTab] = useState('pending');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
 
-
+  // Move fetchJobRequests outside useEffect
   const fetchJobRequests = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        // Fetch job requests for this provider from backend
-        console.log('Fetching job requests for provider:', providerId);
-        const url = `http://localhost:5000/api/provider-bookings/provider/${providerId}`;
-        console.log('Fetching job requests from:', url);
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error('Failed to fetch job requests');
-        }
-        const data = await response.json();
-        setRequests(data.bookings || []);
+    try {
+      setLoading(true);
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) {
+        setError('You must be logged in.');
         setLoading(false);
-      } catch (err) {
-        setError('Failed to load job requests');
-        setLoading(false);
-        console.error('JobRequestsCard: Error fetching job requests:', err);
+        return;
       }
-    };
+      const token = await user.getIdToken();
+      const res = await axios.get('http://localhost:5000/api/provider-bookings', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setJobRequests(res.data.bookings || []);
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to fetch job requests');
+      setLoading(false);
+      console.error('JobRequestsCard: Error fetching job requests:', err);
+    }
+  };
 
   useEffect(() => {
-    if (providerId) {
-      fetchJobRequests();
-    }
-  }, [providerId]);
+    fetchJobRequests();
+  }, []);
 
   const acceptJob = async (jobId) => {
     try {
@@ -50,7 +49,7 @@ const JobRequestsCard = () => {
       });
       if (!response.ok) throw new Error('Failed to update booking status');
       await response.json();
-      fetchJobRequests();
+      await fetchJobRequests(); // Refetch to get the latest state from the server
       alert("Job Confirmed: You've successfully confirmed this job request.");
     } catch (err) {
       alert("Failed to confirm job.");
@@ -63,11 +62,11 @@ const JobRequestsCard = () => {
       const response = await fetch(`http://localhost:5000/api/bookings/${jobId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'declined' })
+        body: JSON.stringify({ status: 'Declined' })
       });
       if (!response.ok) throw new Error('Failed to update booking status');
       await response.json();
-      fetchJobRequests(); // Refetch to get the latest state from the server
+      await fetchJobRequests();
       alert("Job Declined: You've declined this job request.");
     } catch (err) {
       alert("Failed to decline job.");
@@ -75,8 +74,9 @@ const JobRequestsCard = () => {
     }
   };
 
-  const pendingRequests = requests.filter(job => job.status === "pending");
-  const acceptedRequests = requests.filter(job => job.status === "confirmed");
+  const pendingRequests = jobRequests.filter(job => job.status === "pending");
+  const acceptedRequests = jobRequests.filter(job => job.status === "confirmed");
+  const declinedRequests = jobRequests.filter(job => job.status === "Declined");
   
 
   return (
@@ -107,6 +107,7 @@ const JobRequestsCard = () => {
           {[
             { key: 'pending', label: 'Pending', count: pendingRequests.length },
             { key: 'accepted', label: 'Accepted', count: acceptedRequests.length },
+            { key: 'declined', label: 'Declined', count: declinedRequests.length },
           ].map((tab) => (
             <motion.button
               key={tab.key}
@@ -172,7 +173,7 @@ const JobRequestsCard = () => {
                                     minute: '2-digit',
                                   })
                                 : job.time}
-                            </span>
+                          </span>
                           </div>
 
                           <p className="text-xs sm:text-sm text-gray-600 mb-1">
@@ -182,8 +183,23 @@ const JobRequestsCard = () => {
                             {job.description}
                           </p>
                           <p className="text-xs sm:text-sm text-gray-600 mb-1">
-                            {job.address || job.location || ''}
+                            {job.address
+                              ? `${job.address}${job.city && job.state ? `, ${job.city}, ${job.state}` : ''}`
+                              : job.city && job.state
+                                ? `${job.city}, ${job.state}`
+                                : job.userId?.city && job.userId?.state
+                                  ? `${job.userId.city}, ${job.userId.state}`
+                                  : 'Location not specified'}
                           </p>
+
+                          {job.userId?.city && job.userId?.state && (
+                            <div className="mt-4 w-full">
+                              {/* Responsive map container */}
+                              <div className="h-48 sm:h-56 md:h-64 lg:h-72 w-full rounded-lg overflow-hidden shadow-md">
+                                <Map city={job.userId.city} state={job.userId.state} />
+                              </div>
+                            </div>
+                          )}
 
                           <div className="flex flex-col sm:flex-row gap-3 mt-3">
                             <motion.button
@@ -253,16 +269,35 @@ const JobRequestsCard = () => {
                               <div className="w-2 h-2 bg-orange-500 rounded-full mt-1.5"></div>
                               <span className="text-sm font-semibold text-slate-700">Location:</span>
                               <span className="text-sm text-slate-600">
-                                {job.address || job.userId?.location || 'N/A'}
+                                {job.city && job.state
+                                  ? `${job.city}, ${job.state}`
+                                  : job.address || job.userId?.location || 'Location not specified'}
                               </span>
                             </div>
+
+                            {job.userId?.city && job.userId?.state && (
+                              <div className="mt-4 w-full">
+                                {/* Responsive map container with enhanced styling */}
+                                <div className="relative">
+                                  <div className="h-48 sm:h-56 md:h-64 lg:h-72 xl:h-80 w-full rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-gray-50">
+                                    <Map city={job.userId.city} state={job.userId.state} />
+                                  </div>
+                                  {/* Optional map overlay for better visual hierarchy
+                                  <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg shadow-sm">
+                                    <span className="text-xs font-medium text-gray-700">
+                                      📍 {job.userId.city}, {job.userId.state}
+                                    </span>
+                                  </div> */}
+                                </div>
+                              </div>
+                            )}
 
                             <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 p-4 rounded-lg">
                               <div className="flex items-center gap-2 mb-3">
                                 <div className="w-2 h-2 bg-indigo-600 rounded-full"></div>
                                 <span className="text-sm font-bold text-indigo-800">Job Schedule</span>
                               </div>
-                              <div className="grid grid-cols-2 gap-4">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="bg-white p-3 rounded-lg border border-indigo-100">
                                   <span className="text-xs font-semibold text-indigo-600 block mb-1">📅 Date:</span>
                                   <span className="text-sm text-indigo-800 font-medium">
@@ -315,6 +350,71 @@ const JobRequestsCard = () => {
                       transition={{ duration: 0.3 }}
                     >
                       No accepted jobs
+                    </motion.div>
+                  )}
+                </div>
+              )}
+              {activeTab === 'declined' && (
+                <div className="flex flex-col gap-4">
+                  {declinedRequests.length > 0 ? (
+                    declinedRequests.map((job, index) => (
+                      <motion.div
+                        key={job._id}
+                        className="bg-red-50 p-4 rounded-lg"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start mb-2">
+                          <h3 className="text-base font-semibold text-gray-800">
+                            {job.serviceDetails || job.type}
+                          </h3>
+                          <span className="px-3 py-1 bg-red-600 text-white rounded-full text-xs sm:text-sm text-center leading-snug">
+                            {job.scheduledTime
+                              ? new Date(job.scheduledTime).toLocaleDateString()
+                              : job.date}
+                            <br />
+                            {job.scheduledTime
+                              ? new Date(job.scheduledTime).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })
+                              : job.time}
+                          </span>
+                        </div>
+
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1">
+                          {job.customer || job.userId?.name || ''}
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1">
+                          {job.description}
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1">
+                          {job.address
+                            ? `${job.address}${job.city && job.state ? `, ${job.city}, ${job.state}` : ''}`
+                            : job.city && job.state
+                              ? `${job.city}, ${job.state}`
+                              : job.userId?.city && job.userId?.state
+                                ? `${job.userId.city}, ${job.userId.state}`
+                                : 'Location not specified'}
+                        </p>
+
+                        <div className="mt-3">
+                          <span className="px-3 py-1 bg-red-600 text-white rounded-full text-xs sm:text-sm">
+                            Declined
+                          </span>
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <motion.div
+                      className="text-center py-4 text-gray-600 text-xs sm:text-sm"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      No declined requests
                     </motion.div>
                   )}
                 </div>

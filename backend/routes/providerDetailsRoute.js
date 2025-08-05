@@ -1,6 +1,5 @@
 import express from 'express';
 import ServiceProvider from '../model/ServiceProvider.js';
-
 import { verifyFirebaseToken } from '../middleware/AuthMiddleware.js';
 
 const router = express.Router();
@@ -18,7 +17,8 @@ router.post('/', verifyFirebaseToken, async (req, res) => {
       pricingModel,
       availability,
       serviceTypes,
-      location,
+      city,
+      state,
     } = req.body;
 
     const firebaseUid = req.user.uid;
@@ -34,7 +34,8 @@ router.post('/', verifyFirebaseToken, async (req, res) => {
       existingProvider.pricingModel = pricingModel;
       existingProvider.availability = availability;
       existingProvider.serviceTypes = serviceTypes;
-      existingProvider.location = location;
+      existingProvider.city = city;
+      existingProvider.state = state;
       existingProvider.updatedAt = new Date();
 
       await existingProvider.save();
@@ -56,7 +57,8 @@ router.post('/', verifyFirebaseToken, async (req, res) => {
       pricingModel,
       availability,
       serviceTypes,
-      location,
+      city,
+      state,
     });
 
     await newProvider.save();
@@ -104,27 +106,24 @@ router.put('/edit', verifyFirebaseToken, async (req, res) => {
       pricingModel,
       availability,
       serviceTypes,
-      location,
+      city,
+      state,
     } = req.body;
 
-    // 🔍 Basic validation
     if (!name || !email) {
       return res.status(400).json({ message: 'Name and email are required.' });
     }
 
-    // 🔍 Validate email format (optional)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: 'Invalid email format.' });
     }
 
-    // 🔍 Find the provider
     const provider = await ServiceProvider.findOne({ firebaseUid });
     if (!provider) {
       return res.status(404).json({ message: 'Provider not found' });
     }
 
-    // 🔐 Check if the email is being changed
     if (provider.email !== email) {
       const existing = await ServiceProvider.findOne({ email, firebaseUid: { $ne: firebaseUid } });
       if (existing) {
@@ -132,7 +131,6 @@ router.put('/edit', verifyFirebaseToken, async (req, res) => {
       }
     }
 
-    // ✅ Update fields
     provider.name = name;
     provider.email = email;
     provider.phoneNumber = phoneNumber || '';
@@ -141,7 +139,8 @@ router.put('/edit', verifyFirebaseToken, async (req, res) => {
     provider.pricingModel = pricingModel || '';
     provider.availability = availability || {};
     provider.serviceTypes = serviceTypes || [];
-    provider.location = location || '';
+    provider.city = city || '';
+    provider.state = state || '';
     provider.updatedAt = new Date();
 
     await provider.save();
@@ -160,6 +159,5 @@ router.put('/edit', verifyFirebaseToken, async (req, res) => {
     res.status(500).json({ message: 'Failed to update profile' });
   }
 });
-
 
 export default router;

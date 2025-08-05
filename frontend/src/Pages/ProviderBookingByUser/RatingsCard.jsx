@@ -248,7 +248,12 @@ const RatingsCard = ({ providerId = 'default' }) => {
                 <div key={review._id} className="bg-light p-3 rounded">
                   <div className="d-flex justify-content-between align-items-center">
        
-                    <span className="fw-medium">{review.userId?.name || 'Anonymous'}</span>
+                    <span className="fw-medium">
+                      {review.userId?.name || 'Anonymous'}
+                      {review.userId?.city && review.userId?.state
+                        ? ` (${review.userId.city}, ${review.userId.state})`
+                        : ''}
+                    </span>
                     <div className="d-flex">
                       {renderStars(review.rating)}
                     </div>

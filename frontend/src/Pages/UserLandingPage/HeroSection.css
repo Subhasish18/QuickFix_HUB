@@ -127,3 +127,27 @@
   background-color: #808080;
   transform: scale(1.2);
 }
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 36px;
+  }
+
+  .hero-subtitle {
+    font-size: 18px;
+  }
+
+  .search-box {
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .search-input {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .search-button {
+    width: 100%;
+  }
+}

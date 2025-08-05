@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { Card, Button } from 'react-bootstrap';
 import UserEditForm from '../UserEditForm/UserEditForm';
+import Map from '../Map';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const UserProfile = ({ user, onEditSubmit }) => {
   const [showEditModal, setShowEditModal] = useState(false);
-
-  console.log('UserProfile rendered with user:', user); // Debug log
 
   const getInitials = (name) => {
     if (!name) return 'U';
@@ -35,17 +34,17 @@ const UserProfile = ({ user, onEditSubmit }) => {
           <Button
             variant="outline-primary"
             size="sm"
-            onClick={() => {
-              console.log('Edit button clicked'); // Debug log
-              setShowEditModal(true);
-            }}
+            onClick={() => setShowEditModal(true)}
           >
             <i className="bi bi-pencil"></i> Edit
           </Button>
         </Card.Header>
         <Card.Body>
           <div className="d-flex align-items-center gap-3 mb-4">
-            <div className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style={{ width: '64px', height: '64px', fontSize: '1.5rem' }}>
+            <div
+              className="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+              style={{ width: '64px', height: '64px', fontSize: '1.5rem' }}
+            >
               {initials}
             </div>
             <div>
@@ -69,25 +68,36 @@ const UserProfile = ({ user, onEditSubmit }) => {
                 <span className="fs-6">{user.phoneNumber || 'N/A'}</span>
               </div>
             </div>
-            <div className="col-12">
+            <div className="col-6">
               <div className="bg-light p-3 rounded">
-                <span className="d-block fw-medium text-muted">Location</span>
-                <span className="fs-6">{user.location || 'No location provided'}</span>
+                <span className="d-block fw-medium text-muted">State</span>
+                <span className="fs-6">{user.state || 'No state provided'}</span>
+              </div>
+            </div>
+            <div className="col-6">
+              <div className="bg-light p-3 rounded">
+                <span className="d-block fw-medium text-muted">City</span>
+                <span className="fs-6">{user.city || 'No city provided'}</span>
               </div>
             </div>
           </div>
+
+          {user.city && user.state && (
+            <div className="mt-4">
+              {/* Responsive map container */}
+              <div style={{ width: '100%', aspectRatio: '16/9', minHeight: '200px' }}>
+                <Map city={user.city} state={user.state} />
+              </div>
+            </div>
+          )}
         </Card.Body>
       </Card>
 
       <UserEditForm
         show={showEditModal}
-        onHide={() => {
-          console.log('Modal closed'); // Debug log
-          setShowEditModal(false);
-        }}
+        onHide={() => setShowEditModal(false)}
         user={user}
         onSubmit={(updatedUser) => {
-          console.log('Edit form submitted with updatedUser:', updatedUser); // Debug log
           setShowEditModal(false);
           if (onEditSubmit) onEditSubmit(updatedUser);
         }}

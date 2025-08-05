@@ -8,7 +8,9 @@ const ProfileCard = ({ serviceData }) => {
     title: 'Professional Service Provider',
     rating: 4.2,
     category: 'General Services',
-    image: 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg'
+    image: 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg',
+    city: 'Unknown',
+    state: 'Unknown'
   };
   
   const provider = serviceData || defaultData;
@@ -135,6 +137,19 @@ const ProfileCard = ({ serviceData }) => {
               <div className="bg-light p-3 rounded">
                 <span className="d-block" style={{ fontSize: '0.875rem', fontWeight: '500' }}>Jobs Completed</span>
                 <span className="fs-5 fw-semibold">{stats.jobsCompleted}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="row g-3">
+            <div className="col-6">
+              <div className="bg-light p-3 rounded">
+                <span className="d-block" style={{ fontSize: '0.875rem', fontWeight: '500' }}>Location</span>
+                <span className="fs-6">
+                  {provider.city && provider.state
+                    ? `${provider.city}, ${provider.state}`
+                    : 'Location not specified'}
+                </span>
               </div>
             </div>
           </div>

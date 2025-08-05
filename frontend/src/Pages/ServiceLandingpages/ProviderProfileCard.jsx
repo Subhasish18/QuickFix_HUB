@@ -4,6 +4,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import axios from 'axios';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import EditProviderModal from './EditProviderModal';
+import Map from '../Components/Map';
 
 const ProviderProfileCard = ({ serviceData }) => {
   const [provider, setProvider] = useState(serviceData || null);
@@ -19,10 +20,51 @@ const ProviderProfileCard = ({ serviceData }) => {
     pricingModel: '',
     availability: '',
     serviceTypes: '',
-    location: '',
+    city: '',
+    state: '',
   });
 
-  // Fetch provider data
+  // Location dropdown states
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [stateError, setStateError] = useState('');
+  const [cityError, setCityError] = useState('');
+
+  const CSC_API_KEY = import.meta.env.VITE_CSC_API_KEY; // Replace with your key
+
+  // Fetch provider profile (used for initial load and polling)
+  const fetchProviderProfile = async () => {
+    const auth = getAuth();
+    if (!auth.currentUser) return;
+    try {
+      const token = await auth.currentUser.getIdToken();
+      const res = await axios.get('http://localhost:5000/api/provider-details/profile', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProvider(res.data);
+      setFormData({
+        name: res.data.name || '',
+        email: res.data.email || '',
+        phoneNumber: res.data.phoneNumber || '',
+        profileImage: res.data.profileImage || '',
+        description: res.data.description || '',
+        pricingModel: res.data.pricingModel || '',
+        availability: res.data.availability
+          ? Object.entries(res.data.availability)
+              .map(([day, hours]) => `${day}: ${hours.join('-')}`)
+              .join('; ')
+          : '',
+        serviceTypes: res.data.serviceTypes?.join(', ') || '',
+        city: res.data.city || '',
+        state: res.data.state || '',
+      });
+      setError('');
+    } catch (err) {
+      console.error('Error fetching/polling provider:', err);
+      if (loading) setError('Failed to load profile data.');
+    }
+  };
+
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -31,80 +73,70 @@ const ProviderProfileCard = ({ serviceData }) => {
         setLoading(false);
         return;
       }
-
-      try {
-        const token = await user.getIdToken();
-        const res = await axios.get('http://localhost:5000/api/provider-details/profile', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setProvider(res.data);
-        setFormData({
-          name: res.data.name || '',
-          email: res.data.email || '',
-          phoneNumber: res.data.phoneNumber || '',
-          profileImage: res.data.profileImage || '',
-          description: res.data.description || '',
-          pricingModel: res.data.pricingModel || '',
-          availability: res.data.availability
-            ? Object.entries(res.data.availability)
-                .map(([day, hours]) => `${day}: ${hours.join('-')}`)
-                .join('; ')
-            : '',
-          serviceTypes: res.data.serviceTypes?.join(', ') || '',
-          location: res.data.location || '',
-        });
-        setError('');
-      } catch (err) {
-        console.error('Error fetching provider:', err);
-        setError('Failed to load profile data.');
-      } finally {
-        setLoading(false);
-      }
+      await fetchProviderProfile();
+      setLoading(false);
     });
-
-    // Poll for updates every 30 seconds
-    const interval = setInterval(async () => {
-      if (auth.currentUser) {
-        try {
-          const token = await auth.currentUser.getIdToken();
-          const res = await axios.get('http://localhost:5000/api/provider-details/profile', {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          setProvider(res.data);
-          setFormData({
-            name: res.data.name || '',
-            email: res.data.email || '',
-            phoneNumber: res.data.phoneNumber || '',
-            profileImage: res.data.profileImage || '',
-            description: res.data.description || '',
-            pricingModel: res.data.pricingModel || '',
-            availability: res.data.availability
-              ? Object.entries(res.data.availability)
-                  .map(([day, hours]) => `${day}: ${hours.join('-')}`)
-                  .join('; ')
-              : '',
-            serviceTypes: res.data.serviceTypes?.join(', ') || '',
-            location: res.data.location || '',
-          });
-        } catch (err) {
-          console.error('Error polling provider:', err);
-        }
-      }
-    }, 30000);
-
+    const interval = setInterval(fetchProviderProfile, 30000);
     return () => {
       unsubscribe();
       clearInterval(interval);
     };
   }, []);
 
-  // Handle form input changes
+  // Fetch states on mount
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const response = await axios.get('https://api.countrystatecity.in/v1/countries/IN/states', {
+          headers: { 'X-CSCAPI-KEY': CSC_API_KEY },
+        });
+        setStates(response.data || []);
+      } catch (err) {
+        console.error('❌ Error fetching states:', err);
+        setStateError('Could not load states.');
+      }
+    };
+    fetchStates();
+  }, []);
+
+  // Fetch cities when state changes
+  useEffect(() => {
+    if (!formData.state) {
+      setCities([]);
+      return;
+    }
+    const selectedState = states.find(s => s.name === formData.state);
+    if (!selectedState) {
+      setCities([]);
+      return;
+    }
+    const fetchCities = async () => {
+      try {
+        setCityError('');
+        const response = await axios.get(
+          `https://api.countrystatecity.in/v1/countries/IN/states/${selectedState.iso2}/cities`,
+          { headers: { 'X-CSCAPI-KEY': CSC_API_KEY } }
+        );
+        setCities(response.data || []);
+      } catch (err) {
+        console.error('❌ Error fetching cities:', err);
+        setCityError('Could not load cities.');
+      }
+    };
+    fetchCities();
+  }, [formData.state, states]);
+
+  // Input handler: reset city if state changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === 'state') {
+      setFormData((prev) => ({ ...prev, state: value, city: '' }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
-  // Handle form submission for profile updates
+  // Update handler
   const handleUpdate = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -116,17 +148,15 @@ const ProviderProfileCard = ({ serviceData }) => {
         setLoading(false);
         return;
       }
-
       const availabilityObj = {};
       if (formData.availability) {
         formData.availability.split(';').forEach((entry) => {
           const [day, hours] = entry.split(':').map((s) => s.trim());
           if (day && hours) {
-            availabilityObj[day] = hours.split('-').map((h) => h.trim());
+            availabilityObj[day.toLowerCase().slice(0, 3)] = hours.split('-').map((h) => h.trim());
           }
         });
       }
-
       const updateData = {
         name: formData.name,
         email: formData.email,
@@ -136,30 +166,14 @@ const ProviderProfileCard = ({ serviceData }) => {
         pricingModel: formData.pricingModel,
         availability: availabilityObj,
         serviceTypes: formData.serviceTypes.split(',').map((type) => type.trim()),
-        location: formData.location,
+        city: formData.city,
+        state: formData.state,
       };
-
       const token = await user.getIdToken();
       const res = await axios.put('http://localhost:5000/api/provider-details/edit', updateData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       setProvider(res.data.provider);
-      setFormData({
-        name: res.data.provider.name || '',
-        email: res.data.provider.email || '',
-        phoneNumber: res.data.provider.phoneNumber || '',
-        profileImage: res.data.provider.profileImage || '',
-        description: res.data.provider.description || '',
-        pricingModel: res.data.provider.pricingModel || '',
-        availability: res.data.provider.availability
-          ? Object.entries(res.data.provider.availability)
-              .map(([day, hours]) => `${day}: ${hours.join('-')}`)
-              .join('; ')
-          : '',
-        serviceTypes: res.data.provider.serviceTypes?.join(', ') || '',
-        location: res.data.provider.location || '',
-      });
       setShowEditModal(false);
       setError('');
     } catch (err) {
@@ -180,7 +194,8 @@ const ProviderProfileCard = ({ serviceData }) => {
     pricingModel: 'hourly',
     availability: { mon: ['9:00', '17:00'] },
     serviceTypes: ['General Services'],
-    location: 'Unknown',
+    city: 'Unknown',
+    state: 'Unknown',
     rating: 4.2,
   };
 
@@ -364,7 +379,9 @@ const ProviderProfileCard = ({ serviceData }) => {
                 {[
                   { icon: 'bi-envelope', label: 'Email', value: providerData.email },
                   { icon: 'bi-telephone', label: 'Phone', value: providerData.phoneNumber || 'Not specified' },
-                  { icon: 'bi-geo-alt', label: 'Location', value: providerData.location || 'Not specified' },
+                  { icon: 'bi-geo-alt', label: 'Location', value: providerData.city && providerData.state
+    ? `${providerData.city}, ${providerData.state}`
+    : 'Location not specified' },
                   { icon: 'bi-currency-dollar', label: 'Pricing Model', value: providerData.pricingModel || 'Not specified' },
                   { icon: 'bi-clock', label: 'Availability', value: formatAvailability(providerData.availability) },
                 ].map((item, index) => (
@@ -382,6 +399,16 @@ const ProviderProfileCard = ({ serviceData }) => {
                   </motion.div>
                 ))}
               </div>
+            </motion.div>
+            {/* Map Section */}
+            <motion.div
+              className="bg-white p-4 rounded-lg shadow-sm"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+            >
+              <h3 className="text-lg font-bold text-indigo-900 mb-4">Provider Location</h3>
+              <Map city={providerData.city} state={providerData.state} />
             </motion.div>
 
             <motion.div
@@ -446,7 +473,7 @@ const ProviderProfileCard = ({ serviceData }) => {
                   whileHover={{ scale: 1.03 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div className="text-base font-bold text-indigo-600">{stats.successRate}%</div>
+                  <div className="text-base font-bold text-green-600">{stats.successRate}%</div>
                   <div className="text-xs sm:text-sm text-gray-600">Success Rate</div>
                 </motion.div>
               </div>
@@ -496,6 +523,7 @@ const ProviderProfileCard = ({ serviceData }) => {
         </div>
       </motion.div>
 
+      {/* Pass location data and error handlers to the modal */}
       <EditProviderModal
         showEditModal={showEditModal}
         setShowEditModal={setShowEditModal}
@@ -504,6 +532,10 @@ const ProviderProfileCard = ({ serviceData }) => {
         handleInputChange={handleInputChange}
         handleUpdate={handleUpdate}
         loading={loading}
+        states={states}
+        cities={cities}
+        stateError={stateError}
+        cityError={cityError}
       />
     </>
   );

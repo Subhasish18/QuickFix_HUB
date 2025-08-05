@@ -8,7 +8,8 @@ const UserEditForm = ({ show, onHide, user, onSubmit }) => {
     name: user.name || '',
     email: user.email || '',
     phoneNumber: user.phoneNumber || '',
-    location: user.location || ''
+    state: user.state || '',
+    city: user.city || ''
   });
 
   const [errors, setErrors] = useState({});
@@ -16,6 +17,8 @@ const UserEditForm = ({ show, onHide, user, onSubmit }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [submitError, setSubmitError] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState('');
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
 
   useEffect(() => {
     console.log('User prop updated:', user); // Debug log
@@ -23,7 +26,8 @@ const UserEditForm = ({ show, onHide, user, onSubmit }) => {
       name: user.name || '',
       email: user.email || '',
       phoneNumber: user.phoneNumber || '',
-      location: user.location || ''
+      state: user.state || '',
+      city: user.city || ''
     });
   }, [user]);
 
@@ -35,6 +39,32 @@ const UserEditForm = ({ show, onHide, user, onSubmit }) => {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    fetch('https://countriesnow.space/api/v0.1/countries/states', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ country: 'India' })
+    })
+      .then(res => res.json())
+      .then(data => setStates(data.data.states.map(s => s.name)))
+      .catch(() => setStates([]));
+  }, []);
+
+  useEffect(() => {
+    if (!formData.state) {
+      setCities([]);
+      return;
+    }
+    fetch('https://countriesnow.space/api/v0.1/countries/state/cities', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ country: 'India', state: formData.state })
+    })
+      .then(res => res.json())
+      .then(data => setCities(data.data))
+      .catch(() => setCities([]));
+  }, [formData.state]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -51,7 +81,11 @@ const UserEditForm = ({ show, onHide, user, onSubmit }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === "state") {
+      setFormData(prev => ({ ...prev, state: value, city: "" }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
     setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
@@ -190,13 +224,38 @@ const UserEditForm = ({ show, onHide, user, onSubmit }) => {
 
                 <Col md={6}>
                   <Form.Group className="mb-3">
-                    <Form.Label>Location</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="location"
-                      value={formData.location}
+                    <Form.Label>State</Form.Label>
+                    <Form.Select
+                      name="state"
+                      value={formData.state}
                       onChange={handleChange}
-                    />
+                      required
+                    >
+                      <option value="">Select State</option>
+                      {states.map(state => (
+                        <option key={state} value={state}>{state}</option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>City</Form.Label>
+                    <Form.Select
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                      required
+                      disabled={!formData.state}
+                    >
+                      <option value="">Select City</option>
+                      {cities.map(city => (
+                        <option key={city} value={city}>{city}</option>
+                      ))}
+                    </Form.Select>
                   </Form.Group>
                 </Col>
               </Row>

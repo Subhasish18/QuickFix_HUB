@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
@@ -12,6 +12,8 @@ const SERVICE_OPTIONS = [
 
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
+const CSC_API_KEY = import.meta.env.VITE_CSC_API_KEY; // Replace with your key
+
 const ProviderDetails = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -22,10 +24,56 @@ const ProviderDetails = () => {
     pricingModel: '',
     availability: {},
     serviceTypes: [],
-    location: ''
+    state: '',
+    city: ''
   });
 
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
   const navigate = useNavigate();
+
+  // Fetch states on mount
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const response = await axios.get(
+          'https://api.countrystatecity.in/v1/countries/IN/states',
+          { headers: { 'X-CSCAPI-KEY': CSC_API_KEY } }
+        );
+        setStates(response.data || []);
+      } catch (err) {
+        console.error('❌ Error fetching states:', err);
+        setStates([]);
+      }
+    };
+    fetchStates();
+  }, []);
+
+  // Fetch cities when state changes
+  useEffect(() => {
+    if (!formData.state) {
+      setCities([]);
+      return;
+    }
+    const selectedState = states.find(s => s.name === formData.state);
+    if (!selectedState) {
+      setCities([]);
+      return;
+    }
+    const fetchCities = async () => {
+      try {
+        const response = await axios.get(
+          `https://api.countrystatecity.in/v1/countries/IN/states/${selectedState.iso2}/cities`,
+          { headers: { 'X-CSCAPI-KEY': CSC_API_KEY } }
+        );
+        setCities(response.data || []);
+      } catch (err) {
+        console.error('❌ Error fetching cities:', err);
+        setCities([]);
+      }
+    };
+    fetchCities();
+  }, [formData.state, states]);
 
   const handleChange = (e) => {
     const { name, value, selectedOptions } = e.target;
@@ -64,6 +112,7 @@ const ProviderDetails = () => {
 
       const token = await currentUser.getIdToken();
 
+      // Format availability
       const formattedAvailability = {};
       for (const day of WEEKDAYS) {
         const dayData = formData.availability[day];
@@ -173,9 +222,34 @@ const ProviderDetails = () => {
               </select>
               <small className="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
             </div>
+            <div className="mb-3">
+              <label className="form-label fw-bold">State</label>
+              <select
+                name="state"
+                value={formData.state}
+                onChange={handleChange}
+                className="form-control"
+              >
+                <option value="">Select State</option>
+                {states.map((state) => (
+                  <option key={state.iso2} value={state.name}>{state.name}</option>
+                ))}
+              </select>
+            </div>
             <div className="mb-4">
-              <label className="form-label fw-bold">Location</label>
-              <input name="location" value={formData.location} onChange={handleChange} className="form-control" placeholder="Location" />
+              <label className="form-label fw-bold">City</label>
+              <select
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                className="form-control"
+                disabled={!formData.state}
+              >
+                <option value="">Select City</option>
+                {cities.map((city) => (
+                  <option key={city.id} value={city.name}>{city.name}</option>
+                ))}
+              </select>
             </div>
             <button type="submit" className="btn btn-primary w-100 fw-bold">Submit Details</button>
           </form>

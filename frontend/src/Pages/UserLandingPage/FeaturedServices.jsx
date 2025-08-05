@@ -6,63 +6,77 @@ import './FeaturedServices.css';
 
 const hardcodedServices = [
   {
+    id: 'hardcoded-1',
     title: 'Professional House Cleaning',
     company: 'CleanPro Services',
-    location: 'Downtown',
+    city: 'Downtown',
+    state: 'Delhi',
     price: '$25/hr',
     rating: 4.8,
     category: 'Cleaning',
     image: 'https://cdn.pixabay.com/photo/2017/07/25/09/08/the-push-rod-2537315_1280.jpg'
   },
   {
+    id: 'hardcoded-2',
     title: 'Garden & Lawn Maintenance',
     company: 'Green Thumb',
-    location: 'Suburbs',
+    city: 'Suburbs',
+    state: 'Delhi',
     price: '$30/hr',
     rating: 4.7,
     category: 'Gardening',
     image: 'https://cdn.pixabay.com/photo/2021/11/14/18/30/woman-6795430_1280.jpg'
   },
   {
+    id: 'hardcoded-3',
     title: 'Plumbing Repair Services',
     company: 'Quick Fix Plumbing',
-    location: 'Citywide',
+    city: 'Citywide',
+    state: 'Delhi',
     price: '$45/hr',
     rating: 4.9,
     category: 'Plumbing',
     image: 'https://media.istockphoto.com/id/1516511531/photo/a-plumber-carefully-fixes-a-leak-in-a-sink-using-a-wrench.jpg?s=1024x1024&w=is&k=20&c=LkKMuHe7Uj0PjkyC0bn7HEQmQ8Iidl8B8_rqFiPSS2A='
   },
   {
+    id: 'hardcoded-4',
     title: 'Home Electric & Wiring',
     company: 'Bright Spark Electric',
-    location: 'North Side',
+    city: 'North Side',
+    state: 'Delhi',
     price: '$40/hr',
     rating: 4.6,
     category: 'Electrical',
     image: 'https://media.istockphoto.com/id/1049775258/photo/smiling-handsome-electrician-repairing-electrical-box-with-pliers-in-corridor-and-looking-at.jpg?s=1024x1024&w=is&k=20&c=I8Fxr-SRoAovM3W5Ijd36Vv3cYFqrEErd6mKvPUjmzs='
   },
   {
+    id: 'hardcoded-5',
     title: 'Air Conditioning Repair',
     company: 'Cool Air Solutions',
-    location: 'East Side',
+    city: 'East Side',
+    state: 'Delhi',
     price: '$50/hr',
     rating: 4.8,
     category: 'HVAC',
     image: 'https://media.istockphoto.com/id/1208084866/photo/repairer-repairing-air-conditioner.jpg?s=2048x2048&w=is&k=20&c=atDOzqy_3mb7Gp2sAxhSVPRIzqHfqVFH4pV4SSFeZDY='
   },
   {
+    id: 'hardcoded-6',
     title: 'Interior Painting',
     company: 'Perfect Paint Co.',
-    location: 'West Side',
+    city: 'West Side',
+    state: 'Delhi',
     price: '$35/hr',
     rating: 4.7,
     category: 'Painting',
     image: 'https://media.istockphoto.com/id/2190057704/photo/man-painting-living-room-wall-during-apartment-renovation.jpg?s=2048x2048&w=is&k=20&c=0-yruU4lb69Rlf-xTEQ6yAr__xyEFo-L5wloyWWbv5A='
   },
   {
+    id: 'hardcoded-7',
     title: 'Carpet Cleaning Service',
     company: 'Fresh Carpet Care',
-    location: 'South Side',
+    city: 'South Side',
+    state: 'Delhi',
     price: '$28/hr',
     rating: 4.5,
     category: 'Cleaning',
@@ -106,15 +120,16 @@ const FeaturedServices = () => {
         }
 
         const formattedProviders = providers.map(provider => {
-          console.log('Processing provider:', provider);
           return {
+            id: provider._id, // Add this line
             title: provider.services?.[0]?.title || `${provider.category} Services`,
             company: provider.name || 'Service Provider',
-            location: provider.location || 'Available',
+            city: provider.city || 'Unknown',
+            state: provider.state || 'Unknown',
             price: provider.services?.[0]?.price || provider.pricingModel || 'Contact for pricing',
             rating: provider.rating || 4.5,
             category: provider.category || 'General',
-            image: provider.profileImage || 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?t=st=1750000733~exp=1750004333~hmac=a11b1198bb1f20a16349cc3ce40040f12852cedb1ee82db5d3f44bd1fd365551&w=1380',
+            image: provider.profileImage || 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg',
             isRealProvider: true 
           };
         });
@@ -282,7 +297,9 @@ const FeaturedServices = () => {
               </p>
               <p className="service-location">
                 <FaMapMarkerAlt className="service-location-icon" />
-                {service.location}
+                {service.city && service.state
+                  ? `${service.city}, ${service.state}`
+                  : 'Location not specified'}
               </p>
               <div className="service-divider"></div>
               <div className="service-footer">

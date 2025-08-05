@@ -3,11 +3,11 @@
 import mongoose from 'mongoose';
 
 const providerSchema = new mongoose.Schema({
-  // ✅ NEW: Firebase UID for identity checking
+  // ✅ Firebase UID for identity checking
   firebaseUid: {
     type: String,
     required: true,
-    unique: true, // Ensures one Firebase account maps to one provider
+    unique: true,
   },
 
   // 🔧 Existing fields
@@ -19,7 +19,11 @@ const providerSchema = new mongoose.Schema({
   pricingModel: { type: String },      // e.g., 'hourly', 'fixed'
   availability: { type: Object },      // e.g., { mon: ['9:00','17:00'], ... }
   serviceTypes: [{ type: String }],    // e.g., ['Plumbing', 'Electrical']
-  location: { type: String },
+
+  // ✅ Added fields for city and state (dropdown will handle values)
+  city: { type: String, required: true },
+  state: { type: String, required: true },
+
   role: { 
     type: String, 
     enum: ['provider'], 
