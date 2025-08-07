@@ -57,7 +57,8 @@ router.get('/providers/:id', async (req, res) => {
   }
 });
 
-// Delete provider by ID
+// Delete provider by ID is not working
+// This route is used to delete a service provider by ID
 router.delete('/providers/:id', async (req, res) => {
   try {
     await ServiceProvider.findByIdAndDelete(req.params.id);
