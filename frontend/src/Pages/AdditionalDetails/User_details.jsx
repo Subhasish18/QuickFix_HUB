@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { getAuth } from 'firebase/auth';
-import Footer from '../UserLandingPage/Footer';
-import Navbar from '../UserLandingPage/Navbar';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import Footer from './Footer';
+import Navbar from './Navbar';
 
-const CSC_API_KEY = import.meta.env.VITE_CSC_API_KEY; // Use your actual API key
+const CSC_API_KEY = import.meta.env.VITE_CSC_API_KEY;
 
 const UserDetails = () => {
   const [formData, setFormData] = useState({
@@ -18,9 +18,28 @@ const UserDetails = () => {
 
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Fetch states on mount
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        setFormData((prevData) => ({
+          ...prevData,
+          name: currentUser.displayName || '',
+          email: currentUser.email || '',
+        }));
+      } else {
+        navigate('/login');
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, [navigate]);
+
   useEffect(() => {
     const fetchStates = async () => {
       try {
@@ -30,14 +49,12 @@ const UserDetails = () => {
         );
         setStates(response.data || []);
       } catch (err) {
-        console.error('❌ Error fetching states:', err);
         setStates([]);
       }
     };
     fetchStates();
   }, []);
 
-  // Fetch cities when state changes
   useEffect(() => {
     if (!formData.state) {
       setCities([]);
@@ -56,7 +73,6 @@ const UserDetails = () => {
         );
         setCities(response.data || []);
       } catch (err) {
-        console.error('❌ Error fetching cities:', err);
         setCities([]);
       }
     };
@@ -70,18 +86,15 @@ const UserDetails = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!user) {
+      alert("Authentication error. Please log in again.");
+      return;
+    }
+
     try {
-      const auth = getAuth();
-      const user = auth.currentUser;
-
-      if (!user) {
-        alert("You must be logged in to submit details.");
-        return;
-      }
-
       const idToken = await user.getIdToken();
-
-      const res = await axios.post(
+      // Use PUT for update
+      const res = await axios.put(
         'http://localhost:5000/api/user-details',
         formData,
         {
@@ -89,17 +102,19 @@ const UserDetails = () => {
         }
       );
 
-      alert(res.data.message);
-      navigate('/');
+      alert(res.data.message || "Details updated!");
+      navigate('/login');
     } catch (err) {
-      console.error('Error submitting user details:', err);
-      alert(err.response?.data?.message || 'Failed to submit user details. Please try again.');
+      alert(err.response?.data?.message || 'Failed to update user details. Please try again.');
     }
   };
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
-      <Navbar />
       <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light">
         <div className="card shadow-lg p-4" style={{ maxWidth: '400px', width: '100%' }}>
           <h3 className="mb-4 text-center text-primary">Enter Your Details</h3>
@@ -122,11 +137,10 @@ const UserDetails = () => {
                 id="email"
                 name="email"
                 type="email"
-                onChange={handleChange}
                 value={formData.email}
-                placeholder="Enter your email"
                 required
                 className="form-control"
+                readOnly
               />
             </div>
             <div className="mb-3">
@@ -177,7 +191,6 @@ const UserDetails = () => {
           </form>
         </div>
       </div>
-      <Footer />
     </>
   );
 };

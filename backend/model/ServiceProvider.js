@@ -21,8 +21,8 @@ const providerSchema = new mongoose.Schema({
   serviceTypes: [{ type: String }],    // e.g., ['Plumbing', 'Electrical']
 
   // ✅ Added fields for city and state (dropdown will handle values)
-  city: { type: String, required: true },
-  state: { type: String, required: true },
+  city: { type: String },
+  state: { type: String},
 
   role: { 
     type: String, 

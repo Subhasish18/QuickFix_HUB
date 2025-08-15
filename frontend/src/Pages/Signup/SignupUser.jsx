@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import axios from "axios";
 import auth from "../../utils/Firebase";
 import Footer from '../UserLandingPage/Footer';
 import Navbar from '../UserLandingPage/Navbar';
@@ -19,10 +20,29 @@ const SignupUser = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const saveUserToBackend = async (firebaseUser) => {
+    // Get Firebase ID token for authentication
+    const idToken = await firebaseUser.getIdToken();
+    await axios.post(
+      "http://localhost:5000/api/user-details",
+      {
+        name: formData.name,
+        email: formData.email,
+        firebaseUid: firebaseUser.uid,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      }
+    );
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      await saveUserToBackend(userCredential.user);
       alert('User signed up successfully!');
       navigate('/additional-details/user');
     } catch (err) {
@@ -33,7 +53,8 @@ const SignupUser = () => {
   const handleGoogleSignup = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      await saveUserToBackend(result.user);
       alert('User signed up successfully with Google!');
       navigate('/additional-details/user');
     } catch (err) {
