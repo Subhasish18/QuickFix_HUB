@@ -36,7 +36,14 @@ router.post('/', async (req, res) => {
     const serviceProvider = await ServiceProvider.findOne({ email: decodedToken.email });
 
     if (!user && !serviceProvider) {
-      return res.status(404).json({ message: 'User not found. Please sign up first.' });
+      return res.status(200).json({
+        message: 'User authenticated, profile not found.',
+        user: {
+          email: decodedToken.email,
+          role: null,
+          profileComplete: false,
+        },
+      });
     }
 
     // Respond with user or service provider info

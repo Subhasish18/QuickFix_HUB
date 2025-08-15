@@ -8,7 +8,8 @@ const BookingForm = ({ serviceId }) => {
   });
   const [loading, setLoading] = useState(false);
 
-  const userId = localStorage.getItem('userId');
+  const userData = JSON.parse(localStorage.getItem("userData"));
+  const userId = userData.id;
 
   const handleChange = (e) => {
     const { name, value } = e.target;

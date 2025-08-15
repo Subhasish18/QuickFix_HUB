@@ -7,6 +7,7 @@ import BookingTable from './BookingTable';
 import Navbar from '../UserLandingPage/Navbar';
 import { useNavigate } from 'react-router-dom';
 
+
 const AdminPanel = () => {
   const [users, setUsers] = useState([]);
   const [providers, setProviders] = useState([]);
@@ -42,6 +43,29 @@ const AdminPanel = () => {
     fetchAll();
   }, [navigate]);
 
+  const handleDeleteProvider = async (providerId) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/admin/providers/${providerId}`);
+      setProviders(providers.filter(p => p._id !== providerId));
+      setBookings(bookings.filter(b => b.serviceId !== providerId)); 
+      alert('Provider deleted successfully.');
+    } catch (err) {
+      alert('Failed to delete provider.');
+      console.error("Provider delete error:", err);
+    }
+  };
+  const handleDeleteUser = async (userId) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/admin/users/${userId}`);
+      setUsers(users.filter(u => u._id !== userId));
+      setBookings(bookings.filter(b => b.userId !== userId));
+      alert('User deleted successfully.');
+    } catch (err) {
+      alert('Failed to delete provider.');
+      console.error("User delete error:", err);
+    }
+  };
+
   if (loading) {
     return (
       <>
@@ -59,12 +83,12 @@ const AdminPanel = () => {
         
         <div className="bg-white shadow-md rounded-lg p-6 mb-8">
           <h2 className="text-2xl font-semibold mb-4">Users</h2>
-          <UserTable users={users} />
+          <UserTable users={users} onDelete={handleDeleteUser} />
         </div>
         
         <div className="bg-white shadow-md rounded-lg p-6 mb-8">
           <h2 className="text-2xl font-semibold mb-4">Service Providers</h2>
-          <ProviderTable providers={providers} />
+          <ProviderTable providers={providers} onDelete={handleDeleteProvider} />
         </div>
         
         <div className="bg-white shadow-md rounded-lg p-6">

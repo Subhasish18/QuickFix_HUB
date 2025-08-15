@@ -104,12 +104,6 @@ const ProviderDetails = () => {
     try {
       const auth = getAuth();
       const currentUser = auth.currentUser;
-
-      if (!currentUser) {
-        alert('You must be logged in to submit provider details.');
-        return;
-      }
-
       const token = await currentUser.getIdToken();
 
       // Format availability
@@ -123,13 +117,16 @@ const ProviderDetails = () => {
 
       const formattedData = {
         ...formData,
+        city: formData.city || "Rohini",
+        state: formData.state || "Delhi",
         availability: formattedAvailability,
         serviceTypes: formData.serviceTypes
       };
 
       console.log('📤 Submitting provider data:', formattedData);
 
-      const res = await axios.post(
+      // Use PUT for update
+      const res = await axios.put(
         'http://localhost:5000/api/provider-details',
         formattedData,
         {
@@ -140,7 +137,7 @@ const ProviderDetails = () => {
       );
 
       alert(res.data.message);
-      navigate('/', { replace: true });
+      navigate('/login', { replace: true });
       setTimeout(() => window.location.reload(), 100);
 
     } catch (err) {

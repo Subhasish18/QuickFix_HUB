@@ -10,7 +10,8 @@ const UserBookings = () => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const userId = localStorage.getItem('userId');
+  const userData=JSON.parse(localStorage.getItem('userData'));
+  const userId = userData ? userData.id : null;
   const navigate = useNavigate();
 
   useEffect(() => {
