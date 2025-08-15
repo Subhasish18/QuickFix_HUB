@@ -175,7 +175,7 @@ const ProviderDetails = () => {
             </div>
             <div className="mb-3">
               <label className="form-label fw-bold">Pricing Model</label>
-              <input name="pricingModel" value={formData.pricingModel} onChange={handleChange} className="form-control" placeholder="Pricing Model (e.g., hourly, fixed)" />
+              <input name="pricingModel" value={formData.pricingModel} onChange={handleChange} className="form-control" placeholder="Pricing Model (fixed)" />
             </div>
             <div className="mb-3">
               <label className="form-label fw-bold">Availability</label>

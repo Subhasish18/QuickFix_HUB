@@ -5,25 +5,25 @@ const TestimonialsSection = () => {
   const testimonials = [
     {
       id: 1,
-      name: 'Sarah Johnson',
+      name: 'Priya Sharma',
       role: 'Homeowner',
-      image: 'https://cdn.pixabay.com/photo/2024/01/10/16/22/man-8499961_1280.jpg',
+      image: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
       rating: 5,
       text: 'I was impressed by how quickly I was able to book a plumber. The service was excellent and the pricing transparent. Will definitely use again!'
     },
     {
       id: 2,
-      name: 'Michael Chen',
+      name: 'Rohan Mehta',
       role: 'Small Business Owner',
-      image: 'https://cdn.pixabay.com/photo/2024/01/10/16/22/man-8499961_1280.jpg',
+      image: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
       rating: 5,
       text: 'Found an electrician for our office renovation through this platform. The booking process was seamless and the work was completed to a high standard.'
     },
     {
       id: 3,
-      name: 'Emily Rodriguez',
+      name: 'Anjali Gupta',
       role: 'Apartment Renter',
-      image: 'https://cdn.pixabay.com/photo/2024/01/10/16/22/man-8499961_1280.jpg',
+      image: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
       rating: 4,
       text: 'Such a time-saver! I needed urgent cleaning services and was connected with a professional within hours. Great communication throughout.'
     }
