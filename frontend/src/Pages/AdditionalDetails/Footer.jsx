@@ -48,7 +48,7 @@ const Footer = () => {
       <div className="footer-container">
         <div className="footer-top">
           <div className="footer-brand">
-            <div className="brand-title">QuickFix_HUB</div>
+            <div className="brand-title">QuickFixHUB</div>
             <p className="brand-tagline">
               Connecting communities with trusted local service providers.
             </p>
@@ -81,7 +81,7 @@ const Footer = () => {
         </div>
 
         <div className="footer-bottom">
-          <p>© {currentYear} QuickFix_HUB Direct. All rights reserved.</p>
+          <p>© {currentYear} QuickFixHUB Direct. All rights reserved.</p>
           <select className="footer-select">
             <option>English (US)</option>
             <option>Spanish</option>

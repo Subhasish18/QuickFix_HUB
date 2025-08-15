@@ -19,14 +19,15 @@ const EditProviderModal = ({
     <AnimatePresence>
       {showEditModal && (
         <motion.div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          className="fixed inset-0 bg-black/50 block p-4 z-50"
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >
           <motion.div
-            className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-4 sm:p-6 w-full max-w-md sm:max-w-2xl max-h-[90vh] overflow-y-auto"
+            className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-4 sm:p-6 w-full max-w-md sm:max-w-2xl max-h-[90vh] overflow-y-auto mx-auto mt-8"
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
@@ -50,7 +51,7 @@ const EditProviderModal = ({
                 { label: 'Phone Number', name: 'phoneNumber', type: 'tel' },
 { label: 'Profile Image URL', name: 'profileImage', type: 'url', placeholder: 'Enter image URL (e.g., https://example.com/image.jpg)' },
                 { label: 'Description', name: 'description', type: 'textarea' },
-                { label: 'Pricing Model (e.g., hourly, fixed)', name: 'pricingModel', type: 'text' },
+                { label: 'Pricing Model (fixed)', name: 'pricingModel', type: 'text' },
                 {
                   label: 'Availability (e.g., mon: 9:00-17:00; tue: 10:00-18:00)',
                   name: 'availability',

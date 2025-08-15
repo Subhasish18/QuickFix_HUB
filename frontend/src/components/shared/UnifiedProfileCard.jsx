@@ -1,20 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Card, Badge, ProgressBar } from 'react-bootstrap';
 import { motion } from 'framer-motion';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import EditProviderModal from '../../Pages/ServiceLandingpages/EditProviderModal';
-import Map from '../../Pages/Components/Map'; 
+import Map from '../../Pages/Components/Map';
+import { useProfile } from '../../context/ProfileContext';
+
 const UnifiedProfileCard = ({ 
   serviceData, 
   mode = 'view', 
   onUpdate 
 }) => {
-  const [provider, setProvider] = useState(serviceData || null);
-  const [loading, setLoading] = useState(mode === 'edit');
-  const [error, setError] = useState('');
+  const { provider, loading: profileLoading, error: profileError, updateProfile } = useProfile();
   const [showEditModal, setShowEditModal] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -34,63 +34,30 @@ const UnifiedProfileCard = ({
   const [cities, setCities] = useState([]);
   const [stateError, setStateError] = useState('');
   const [cityError, setCityError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const CSC_API_KEY = import.meta.env.VITE_CSC_API_KEY;
 
-  // Fetch provider profile (used for initial load and polling)
-  const fetchProviderProfile = async () => {
-    const auth = getAuth();
-    if (!auth.currentUser) return;
-    try {
-      const token = await auth.currentUser.getIdToken();
-      const res = await axios.get('http://localhost:5000/api/provider-details/profile', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setProvider(res.data);
+  useEffect(() => {
+    if (provider) {
       setFormData({
-        name: res.data.name || '',
-        email: res.data.email || '',
-        phoneNumber: res.data.phoneNumber || '',
-        profileImage: res.data.profileImage || '',
-        description: res.data.description || '',
-        pricingModel: res.data.pricingModel || '',
-        availability: res.data.availability
-          ? Object.entries(res.data.availability)
+        name: provider.name || '',
+        email: provider.email || '',
+        phoneNumber: provider.phoneNumber || '',
+        profileImage: provider.profileImage || '',
+        description: provider.description || '',
+        pricingModel: provider.pricingModel || '',
+        availability: provider.availability
+          ? Object.entries(provider.availability)
               .map(([day, hours]) => `${day}: ${hours.join('-')}`)
               .join('; ')
           : '',
-        serviceTypes: res.data.serviceTypes?.join(', ') || '',
-        city: res.data.city || '',
-        state: res.data.state || '',
+        serviceTypes: provider.serviceTypes?.join(', ') || '',
+        city: provider.city || '',
+        state: provider.state || '',
       });
-      setError('');
-    } catch (err) {
-      console.error('Error fetching/polling provider:', err);
-      if (loading) setError('Failed to load profile data.');
     }
-  };
-
-  useEffect(() => {
-    if (mode !== 'edit') {
-      setLoading(false);
-      return;
-    }
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        setError('Please log in to view profile data.');
-        setLoading(false);
-        return;
-      }
-      await fetchProviderProfile();
-      setLoading(false);
-    });
-    const interval = setInterval(fetchProviderProfile, 30000);
-    return () => {
-      unsubscribe();
-      clearInterval(interval);
-    };
-  }, [mode]);
+  }, [provider]);
 
   // Fetch states on mount
   useEffect(() => {
@@ -153,7 +120,7 @@ const UnifiedProfileCard = ({
       const auth = getAuth();
       const user = auth.currentUser;
       if (!user) {
-        setError('Please log in to update profile.');
+        // setError('Please log in to update profile.');
         setLoading(false);
         return;
       }
@@ -186,13 +153,13 @@ const UnifiedProfileCard = ({
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setProvider(res.data.provider);
+      updateProfile(res.data.provider);
       setShowEditModal(false);
-      setError('');
+      // setError('');
       if (onUpdate) onUpdate(res.data.provider);
     } catch (err) {
       console.error('Error updating provider:', err);
-      setError(err.response?.data?.message || 'Failed to update profile.');
+      // setError(err.response?.data?.message || 'Failed to update profile.');
     } finally {
       setLoading(false);
     }
@@ -215,6 +182,7 @@ const UnifiedProfileCard = ({
 
   // Use fetched provider data or fallback
   const providerData = provider || serviceData || defaultData;
+  console.log('providerData', providerData);
 
   // Safely get the primary service type to prevent runtime errors
   const primaryService = (providerData.serviceTypes && providerData.serviceTypes.length > 0)
@@ -292,6 +260,7 @@ const UnifiedProfileCard = ({
   };
 
   const stats = generateStats(providerData.name);
+  console.log('stats', stats);
 
   // Format availability
   const formatAvailability = (availability) => {
@@ -301,7 +270,7 @@ const UnifiedProfileCard = ({
       .join(', ');
   };
 
-  if (loading) {
+  if (profileLoading) {
     return (
       <motion.div
         className={mode === 'edit' ? 
@@ -317,7 +286,7 @@ const UnifiedProfileCard = ({
     );
   }
 
-  if (error && mode === 'edit') {
+  if (profileError && mode === 'edit') {
     return (
       <motion.div
         className="bg-white/80 backdrop-blur-sm rounded-xl shadow-xl p-4 sm:p-6 text-center text-danger"
@@ -325,7 +294,7 @@ const UnifiedProfileCard = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        {error}
+        {profileError}
       </motion.div>
     );
   }
@@ -351,10 +320,7 @@ const UnifiedProfileCard = ({
               <div>
                 <h5 className="mb-1">{providerData.name}</h5>
                 <p className="text-muted mb-1" style={{ fontSize: '0.875rem' }}>{providerData.description}</p>
-                <div className="d-flex align-items-center gap-1">
-                  {renderStars(providerData.rating)}
-                  <span className="ms-1" style={{ fontSize: '0.875rem' }}>({providerData.rating})</span>
-                </div>
+                
               </div>
             </div>
 
@@ -379,7 +345,12 @@ const UnifiedProfileCard = ({
                   <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>Profile Completion</span>
                   <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{stats.profileCompletion}%</span>
                 </div>
-                <ProgressBar now={stats.profileCompletion} variant="primary" style={{ height: '8px' }} className="mt-1" />
+                <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                  <div
+                    className="bg-indigo-600 h-2 rounded-full"
+                    style={{ width: `${stats.profileCompletion}%` }}
+                  />
+                </div>
               </div>
               
               <div className="row g-2 mb-3">
@@ -402,7 +373,12 @@ const UnifiedProfileCard = ({
                   <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>Repeat Customers</span>
                   <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{stats.repeatCustomers}%</span>
                 </div>
-                <ProgressBar now={stats.repeatCustomers} variant="success" style={{ height: '6px' }} />
+                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div
+                    className="bg-green-500 h-1.5 rounded-full"
+                    style={{ width: `${stats.repeatCustomers}%` }}
+                  />
+                </div>
               </div>
               
               <div>
@@ -472,10 +448,7 @@ const UnifiedProfileCard = ({
                 <div className="text-center sm:text-left">
                   <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">{providerData.name}</h3>
                   <p className="text-sm sm:text-base italic text-white/90">{providerData.description}</p>
-                  <div className="flex items-center gap-2 mt-2 bg-amber-200 rounded-full px-2 py-1 inline-flex">
-                    {renderStars(providerData.rating)}
-                    <span className="text-sm text-gray-900">({providerData.rating})</span>
-                  </div>
+                  
                 </div>
               </div>
             </motion.div>
@@ -493,7 +466,7 @@ const UnifiedProfileCard = ({
                   { icon: 'bi-geo-alt', label: 'Location', value: providerData.city && providerData.state
                     ? `${providerData.city}, ${providerData.state}`
                     : 'Location not specified' },
-                  { icon: 'bi-currency-dollar', label: 'Pricing Model', value: providerData.pricingModel || 'Not specified' },
+                  { icon: 'bi-currency-rupee', label: 'Pricing Model', value: providerData.pricingModel || 'Not specified' },
                   { icon: 'bi-clock', label: 'Availability', value: formatAvailability(providerData.availability) },
                 ].map((item, index) => (
                   <motion.div
@@ -560,12 +533,9 @@ const UnifiedProfileCard = ({
                   <span>{stats.profileCompletion}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                  <motion.div
+                  <div
                     className="bg-indigo-600 h-2 rounded-full"
                     style={{ width: `${stats.profileCompletion}%` }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${stats.profileCompletion}%` }}
-                    transition={{ duration: 0.5 }}
                   />
                 </div>
               </div>
@@ -595,12 +565,9 @@ const UnifiedProfileCard = ({
                   <span>{stats.repeatCustomers}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <motion.div
+                  <div
                     className="bg-green-500 h-1.5 rounded-full"
                     style={{ width: `${stats.repeatCustomers}%` }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${stats.repeatCustomers}%` }}
-                    transition={{ duration: 0.5 }}
                   />
                 </div>
               </div>

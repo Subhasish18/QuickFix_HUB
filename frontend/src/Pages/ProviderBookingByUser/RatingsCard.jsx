@@ -211,6 +211,8 @@ const RatingsCard = ({ providerId = 'default' }) => {
                   variant="primary"
                   style={{ height: '8px', flex: 1 }}
                   className="me-2"
+                  striped={false}
+                  animated={false}
                 />
                 <span style={{ width: '40px', fontSize: '0.875rem' }}>{item.count}</span>
               </div>
