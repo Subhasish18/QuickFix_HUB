@@ -1,6 +1,6 @@
 import express from 'express';
 import ServiceProvider from '../model/ServiceProvider.js';
-import { verifyFirebaseToken } from '../middleware/AuthMiddleware.js';
+import { verifyFirebaseToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -11,14 +11,14 @@ router.post('/', verifyFirebaseToken, async (req, res) => {
     const {
       name,
       email,
-      phoneNumber,
-      profileImage,
-      description,
-      pricingModel,
-      availability,
-      serviceTypes,
-      city,
-      state,
+      phoneNumber = '',
+      profileImage = '',
+      description = '',
+      pricingModel = '',
+      availability = {},
+      serviceTypes = [],
+      city = 'Rohini',
+      state = 'Delhi',
     } = req.body;
 
     const firebaseUid = req.user.uid;
@@ -100,14 +100,14 @@ router.put('/edit', verifyFirebaseToken, async (req, res) => {
     const {
       name,
       email,
-      phoneNumber,
-      profileImage,
-      description,
-      pricingModel,
-      availability,
-      serviceTypes,
-      city,
-      state,
+      phoneNumber = '',
+      profileImage = '',
+      description = '',
+      pricingModel = '',
+      availability = {},
+      serviceTypes = [],
+      city = 'Rohini',
+      state = 'Delhi',
     } = req.body;
 
     if (!name || !email) {
@@ -133,14 +133,14 @@ router.put('/edit', verifyFirebaseToken, async (req, res) => {
 
     provider.name = name;
     provider.email = email;
-    provider.phoneNumber = phoneNumber || '';
-    provider.profileImage = profileImage || '';
-    provider.description = description || '';
-    provider.pricingModel = pricingModel || '';
-    provider.availability = availability || {};
-    provider.serviceTypes = serviceTypes || [];
-    provider.city = city || '';
-    provider.state = state || '';
+    provider.phoneNumber = phoneNumber;
+    provider.profileImage = profileImage;
+    provider.description = description;
+    provider.pricingModel = pricingModel;
+    provider.availability = availability;
+    provider.serviceTypes = serviceTypes;
+    provider.city = city;
+    provider.state = state;
     provider.updatedAt = new Date();
 
     await provider.save();
@@ -157,6 +157,51 @@ router.put('/edit', verifyFirebaseToken, async (req, res) => {
     }
 
     res.status(500).json({ message: 'Failed to update profile' });
+  }
+});
+router.put('/', verifyFirebaseToken, async (req, res) => {
+  try {
+    const firebaseUid = req.user.uid;
+    const {
+      name,
+      email,
+      phoneNumber = '',
+      profileImage = '',
+      description = '',
+      pricingModel = '',
+      availability = {},
+      serviceTypes = [],
+      city = 'Rohini',
+      state = 'Delhi',
+    } = req.body;
+
+    if (!name || !email) {
+      return res.status(400).json({ message: 'Name and email are required.' });
+    }
+
+    const provider = await ServiceProvider.findOne({ firebaseUid });
+    if (!provider) {
+      return res.status(404).json({ message: 'Provider not found' });
+    }
+
+    provider.name = name;
+    provider.email = email;
+    provider.phoneNumber = phoneNumber;
+    provider.profileImage = profileImage;
+    provider.description = description;
+    provider.pricingModel = pricingModel;
+    provider.availability = availability;
+    provider.serviceTypes = serviceTypes;
+    provider.city = city;
+    provider.state = state;
+    provider.updatedAt = new Date();
+
+    await provider.save();
+
+    res.status(200).json({ message: 'Provider details updated successfully!', provider });
+  } catch (error) {
+    console.error('❌ Error updating provider:', error);
+    res.status(500).json({ message: 'Failed to update provider details' });
   }
 });
 

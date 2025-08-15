@@ -52,11 +52,16 @@ const Login = () => {
           headers: { Authorization: `Bearer ${idToken}` },
         });
 
-        // Store the full user data (profile + role) from the backend.
-        localStorage.setItem('userData', JSON.stringify(loginResponse.data.user));
+        const userData = loginResponse.data.user;
+        localStorage.setItem('userData', JSON.stringify(userData));
 
-        alert('Login successful!');
-        navigate('/'); // Redirect to the homepage
+        if (userData.profileComplete === false) {
+          alert('Welcome! Please complete your profile.');
+          navigate('/additional-details/user');
+        } else {
+          alert('Login successful!');
+          navigate('/'); // Redirect to the homepage
+        }
       } catch (firebaseError) {
         // Provide user-friendly error messages for common Firebase auth issues.
         let errorMessage = 'Failed to log in. Please check your credentials.';
@@ -97,11 +102,16 @@ const Login = () => {
         },
       });
 
-      // Store the complete user data from the backend response.
-      localStorage.setItem('userData', JSON.stringify(response.data.user));
+      const userData = response.data.user;
+      localStorage.setItem('userData', JSON.stringify(userData));
 
-      alert('Signed in with Google!');
-      navigate('/');
+      if (userData.profileComplete === false) {
+        alert('Welcome! Please complete your profile.');
+        navigate('/additional-details/user');
+      } else {
+        alert('Signed in with Google!');
+        navigate('/');
+      }
     } catch (error) {
       setError(error.message);
     } finally {

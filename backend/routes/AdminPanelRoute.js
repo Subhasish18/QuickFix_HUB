@@ -30,6 +30,7 @@ router.get('/users/:id', async (req, res) => {
 router.delete('/users/:id', async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
+    await Booking.deleteMany({ userId: req.params.id }); // Optionally delete related bookings
     res.json({ message: 'User deleted' });
   } catch (err) {
     res.status(500).json({ message: 'Failed to delete user' });
@@ -62,6 +63,7 @@ router.get('/providers/:id', async (req, res) => {
 router.delete('/providers/:id', async (req, res) => {
   try {
     await ServiceProvider.findByIdAndDelete(req.params.id);
+    await Booking.deleteMany({ serviceId: req.params.id }); // Optionally delete related bookings
     res.json({ message: 'Provider deleted' });
   } catch (err) {
     res.status(500).json({ message: 'Failed to delete provider' });

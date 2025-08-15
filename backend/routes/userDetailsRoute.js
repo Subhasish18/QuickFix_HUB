@@ -1,15 +1,15 @@
 import express from 'express';
 import User from '../model/User.js';
 import ServiceProvider from '../model/ServiceProvider.js';
-import { verifyFirebaseToken } from '../middleware/authMiddleware.js'; // Ensure this middleware is correctly set up
+import { verifyFirebaseToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // ✅ POST: Create or update user details
 router.post('/', verifyFirebaseToken, async (req, res) => {
+  console.log('📥 Incoming user POST request:', req.body);
   try {
-    const { name, email, phoneNumber, city, state } = req.body;
-
+    const { name, email, phoneNumber = '', city = '', state = ''} = req.body;
     const firebaseUid = req.user.uid;
     console.log('Firebase UID from token:', firebaseUid);
 
@@ -68,6 +68,8 @@ router.post('/', verifyFirebaseToken, async (req, res) => {
     res.status(500).json({ message: 'Failed to save user details' });
   }
 });
+
+
 
 // ✅ GET: Fetch user profile
 router.get('/profile', verifyFirebaseToken, async (req, res) => {
@@ -142,12 +144,46 @@ router.put('/edit', verifyFirebaseToken, async (req, res) => {
   }
 });
 
+// ✅ PUT: Update user details
+router.put('/', verifyFirebaseToken, async (req, res) => {
+  try {
+    const firebaseUid = req.user.uid;
+    const { name, email, phoneNumber, city, state } = req.body;
+
+    if (!name || !email) {
+      return res.status(400).json({ message: 'Name and email are required.' });
+    }
+
+    const user = await User.findOne({ firebaseUid });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.name = name;
+    user.email = email;
+    user.phoneNumber = phoneNumber || '';
+    user.city = city || 'Rohini';
+    user.state = state || 'Delhi';
+    user.updatedAt = new Date();
+
+    await user.save();
+
+    res.status(200).json({
+      message: 'User details updated successfully!',
+      user
+    });
+  } catch (error) {
+    console.error('Error updating user details:', error);
+    res.status(500).json({ message: 'Failed to update user details' });
+  }
+});
+
 // ✅ GET: Get user role
 router.get('/role', verifyFirebaseToken, async (req, res) => {
   try {
+    console.log('📥 Incoming /role request');
     const firebaseUid = req.user.uid;
-
+    console.log('Firebase UID from token:', firebaseUid);
     const user = await User.findOne({ firebaseUid });
+    console.log('User found:', !!user);
     if (user) return res.status(200).json({ role: 'user' });
 
     const provider = await ServiceProvider.findOne({ firebaseUid });

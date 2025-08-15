@@ -1,6 +1,6 @@
 // backend/middleware/AuthMiddleware.js
 import adminFirebase from '../firebase.js';
-
+console.log('🔵 Auth middleware initialized');
 const verifyFirebaseToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -9,10 +9,12 @@ const verifyFirebaseToken = async (req, res, next) => {
   }
 
   const idToken = authHeader.split(' ')[1];
+  
 
   try {
     const decodedToken = await adminFirebase.auth().verifyIdToken(idToken);
     req.user = decodedToken; // Store user info for next middleware/route
+   
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Invalid Firebase token', error });

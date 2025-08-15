@@ -11,8 +11,8 @@ const userSchema = new mongoose.Schema({
   phoneNumber: { type: String },
 
   // ✅ Replaced single location with city & state for API-based dropdown
-  city: { type: String, required: true },
-  state: { type: String, required: true },
+  city: { type: String },
+  state: { type: String},
 
   role: { 
     type: String, 
