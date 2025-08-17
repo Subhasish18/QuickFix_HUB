@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '../UserLandingPage/Navbar';
 import Footer from './Footer';
 import StatsCard from './StatsCard';
@@ -11,13 +11,29 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 const BookPage = () => {
   const location = useLocation();
-  const selectedService = location.state?.service;
-  
-  
-  const providerId = location.state?.service?.id || location.state?.serviceId;
-  const serviceId = providerId; 
+  const navigate = useNavigate();
 
-  const userId = localStorage.getItem('userId');
+  // Check if user is logged in and is a user (not provider)
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (!userData || userData.role !== 'user') {
+      alert('Please login as user to book a service.');
+      navigate('/login', { replace: true });
+    }
+  }, [navigate]);
+
+  const selectedService = location.state?.service;
+  const providerId = selectedService?.id || location.state?.serviceId;
+  const serviceId = providerId;
+  const userId = JSON.parse(localStorage.getItem('userData'))?._id || localStorage.getItem('userId');
+
+  // Redirect if no providerId or selectedService
+  useEffect(() => {
+    if (!providerId || !selectedService) {
+      alert('Invalid access. Please select a service provider first.');
+      navigate('/#services', { replace: true });
+    }
+  }, [providerId, selectedService, navigate]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -27,8 +43,6 @@ const BookPage = () => {
     <>
       <Navbar />
       <div className="container py-4">
-        
-
         <h1 className="h2 fw-bold mb-4">Service Provider Dashboard</h1>
         {selectedService?.city && selectedService?.state && (
           <div className="mb-2 text-muted">
@@ -48,9 +62,7 @@ const BookPage = () => {
           </div>
           <div className="col-12 col-md-4">
             <div className="d-flex flex-column gap-4">
-              <RatingsCard
-                providerId={providerId || 'default'}
-              />
+              <RatingsCard providerId={providerId || 'default'} />
             </div>
           </div>
         </div>
