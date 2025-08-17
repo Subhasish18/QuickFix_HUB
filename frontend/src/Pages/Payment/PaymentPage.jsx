@@ -26,14 +26,7 @@ const PaymentPage = () => {
     }
   }, [navigate]);
 
-  // Ensure service/provider is valid
-  useEffect(() => {
-    const providerId = service?.id || serviceId;
-    if (!providerId || !service) {
-      alert("Invalid access. Please select a service provider first.");
-      navigate("/#services", { replace: true });
-    }
-  }, [service, serviceId, navigate]);
+  
 
   // Autofill amount from price if available
   useEffect(() => {
@@ -41,13 +34,6 @@ const PaymentPage = () => {
       setAmount(price.toString());
     }
   }, [price]);
-  useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('userData'));
-    if (!userData || userData.role !== 'user') {
-      alert('Please login as user to access the payment page.');
-      navigate('/login', { replace: true });
-    }
-  }, [navigate]);
 
   const handlePayNow = async () => {
     setIsProcessing(true);
@@ -56,11 +42,12 @@ const PaymentPage = () => {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Update booking status
-      await axios.put(http://localhost:5000/api/bookings/${bookingId}/status, {
-        paymentStatus: "paid",
-      });
+      await axios.put(
+        `http://localhost:5000/api/bookings/${bookingId}/status`,
+        { paymentStatus: "paid" }
+      );
 
-      console.log(Payment of ${amount} processed for booking ${bookingId}.);
+      console.log(`Payment of ${amount} processed for booking ${bookingId}.`);
       toast.success("✅ Payment successful. Please wait!");
       toast.info("Redirecting to Booking Details...");
       setTimeout(() => navigate("/userDetails"), 2000);
