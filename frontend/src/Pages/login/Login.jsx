@@ -4,12 +4,15 @@ import auth from '../../utils/Firebase';
 import {
   signInWithEmailAndPassword,
   signInWithPopup,
-  GoogleAuthProvider
+  GoogleAuthProvider,
 } from 'firebase/auth';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../UserLandingPage/Footer';
 import Navbar from '../UserLandingPage/Navbar';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -25,29 +28,26 @@ const Login = () => {
     setError('');
 
     try {
-      // Step 1: Attempt admin login by sending credentials directly to the backend.
+      // Step 1: Attempt admin login
       const response = await axios.post('http://localhost:5000/api/login', {
         email,
         password,
       });
 
-      // If the backend identifies the user as an admin, handle admin login.
       if (response.data.user && response.data.user.role === 'admin') {
         localStorage.setItem('userData', JSON.stringify(response.data.user));
-        alert('Admin login successful!');
-        navigate('/admin'); // Redirect to the admin dashboard
+        toast.success('Admin login successful ✅', { toastId: 'admin-login' });
+        navigate('/admin');
       } else {
-        // This case should not be reached if the backend is correct, but we throw to be safe.
         throw new Error('Not an admin.');
       }
     } catch (adminError) {
-      // Step 2: If admin login fails, proceed with Firebase authentication for regular users.
+      // Step 2: Firebase login for regular users
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         const idToken = await user.getIdToken();
 
-        // Call the backend with the Firebase token to get the user's DB profile.
         const loginResponse = await axios.post('http://localhost:5000/api/login', {}, {
           headers: { Authorization: `Bearer ${idToken}` },
         });
@@ -56,14 +56,13 @@ const Login = () => {
         localStorage.setItem('userData', JSON.stringify(userData));
 
         if (userData.profileComplete === false) {
-          alert('Welcome! Please complete your profile.');
+          toast.info('Welcome! Please complete your profile ℹ️', { toastId: 'profile-incomplete' });
           navigate('/additional-details/user');
         } else {
-          alert('Login successful!');
-          navigate('/'); // Redirect to the homepage
+          toast.success('Login successful 🎉', { toastId: 'user-login' });
+          navigate('/');
         }
       } catch (firebaseError) {
-        // Provide user-friendly error messages for common Firebase auth issues.
         let errorMessage = 'Failed to log in. Please check your credentials.';
         if (firebaseError.code) {
           switch (firebaseError.code) {
@@ -79,12 +78,12 @@ const Login = () => {
           }
         }
         setError(errorMessage);
+        toast.error(errorMessage, { toastId: 'login-failed' });
       }
     } finally {
       setLoading(false);
     }
   };
-
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -95,25 +94,23 @@ const Login = () => {
       const user = result.user;
       const idToken = await user.getIdToken();
 
-      // Call the backend with the token to get the user's full profile from the DB.
       const response = await axios.post('http://localhost:5000/api/login', {}, {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
+        headers: { Authorization: `Bearer ${idToken}` },
       });
 
       const userData = response.data.user;
       localStorage.setItem('userData', JSON.stringify(userData));
 
       if (userData.profileComplete === false) {
-        alert('Welcome! Please complete your profile.');
+        toast.info('Welcome! Please complete your profile ℹ️', { toastId: 'google-profile-incomplete' });
         navigate('/additional-details/user');
       } else {
-        alert('Signed in with Google!');
+        toast.success('Signed in with Google 🚀', { toastId: 'google-login' });
         navigate('/');
       }
     } catch (error) {
       setError(error.message);
+      toast.error(error.message, { toastId: 'google-login-failed' });
     } finally {
       setLoading(false);
     }
@@ -123,62 +120,63 @@ const Login = () => {
     <>
       <Navbar />
       <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
-    <StyledWrapper>
-      <form onSubmit={handleLogin} className="form">
-        <div className="flex-column">
-          <label>Email</label>
-        </div>
-        <div className="inputForm">
-          <input
-            type="email"
-            placeholder="Enter your Email"
-            className="input"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
+        <StyledWrapper>
+          <form onSubmit={handleLogin} className="form">
+            <div className="flex-column">
+              <label>Email</label>
+            </div>
+            <div className="inputForm">
+              <input
+                type="email"
+                placeholder="Enter your Email"
+                className="input"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
 
-        <div className="flex-column">
-          <label>Password</label>
-        </div>
-        <div className="inputForm">
-          <input
-            type="password"
-            placeholder="Enter your Password"
-            className="input"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+            <div className="flex-column">
+              <label>Password</label>
+            </div>
+            <div className="inputForm">
+              <input
+                type="password"
+                placeholder="Enter your Password"
+                className="input"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
 
-        <div className="flex-row">
-          <div>
-            <input type="checkbox" />
-            <label>Remember me</label>
-          </div>
-          <span className="span">Forgot password?</span>
-        </div>
+            <div className="flex-row">
+              <div>
+                <input type="checkbox" />
+                <label>Remember me</label>
+              </div>
+              <span className="span">Forgot password?</span>
+            </div>
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button className="button-submit" disabled={loading}>
-          {loading ? 'Signing in...' : 'Sign In'}
-        </button>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+            <button className="button-submit" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
 
-        <p className="p">Don't have an account? <span className="span">Sign Up</span></p>
-        <p className="p line">Or With</p>
+            <p className="p">Don't have an account? <span className="span">Sign Up</span></p>
+            <p className="p line">Or With</p>
 
-        <div className="flex-row">
-          <button type="button" className="btn google" onClick={handleGoogleSignIn}>
-            <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" alt="google" width={20} />
-            Google
-          </button>
-        </div>
-      </form>
-    </StyledWrapper>
-    </div>
-    <Footer />
+            <div className="flex-row">
+              <button type="button" className="btn google" onClick={handleGoogleSignIn}>
+                <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" alt="google" width={20} />
+                Google
+              </button>
+            </div>
+          </form>
+        </StyledWrapper>
+      </div>
+      <Footer />
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
     </>
   );
 };

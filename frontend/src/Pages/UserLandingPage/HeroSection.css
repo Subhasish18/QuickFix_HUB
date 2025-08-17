@@ -45,6 +45,10 @@
   outline: none;
   padding: 12px;
   font-size: 16px;
+  background-color: #f8fafc; /* ✅ light background so it’s visible */
+  color: #0f172a;           /* ✅ dark text */
+  border-radius: 6px; 
+  border: 1px solid #cbd5e1; /* ✅ makes it stand out */
 }
 
 .search-button {

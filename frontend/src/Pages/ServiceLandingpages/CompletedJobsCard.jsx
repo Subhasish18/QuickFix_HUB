@@ -1,56 +1,58 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import 'bootstrap-icons/font/bootstrap-icons.css';
 import { getAuth } from 'firebase/auth';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Map from '../Components/Map';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const CompletedJobsCard = () => {
   const [completedJobs, setCompletedJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchCompletedJobs = async () => {
       try {
         setLoading(true);
-        setError(null);
         const auth = getAuth();
         const user = auth.currentUser;
+
         if (!user) {
-          setError('You must be logged in.');
+          toast.error('You must be logged in to view completed jobs.');
           setLoading(false);
           return;
         }
+
         const token = await user.getIdToken();
         const response = await fetch('http://localhost:5000/api/provider-bookings', {
           headers: { Authorization: `Bearer ${token}` }
         });
+
         if (!response.ok) throw new Error('Failed to fetch completed jobs');
+
         const data = await response.json();
-        setCompletedJobs((data.bookings || []).filter(job => job.status === 'completed'));
-        setLoading(false);
+        const jobs = (data.bookings || []).filter(job => job.status === 'completed');
+        setCompletedJobs(jobs);
       } catch (err) {
-        setError('Failed to load completed jobs');
+        toast.error('Failed to load completed jobs');
+      } finally {
         setLoading(false);
       }
     };
     fetchCompletedJobs();
   }, []);
 
-  const renderStars = (rating) => {
-    return Array(5).fill(0).map((_, i) => (
-      <motion.svg
-        key={i}
-        xmlns="http://www.w3.org/2000/svg"
-        className="w-3 h-3 sm:w-4 sm:h-4"
-        fill={i < rating ? '#facc15' : '#e5e7eb'}
-        viewBox="0 0 16 16"
-        whileHover={{ scale: 1.2 }}
-        transition={{ duration: 0.2 }}
-      >
-        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-      </motion.svg>
-    ));
+  const getPaymentStatusStyle = (status) => {
+    switch (status) {
+      case 'Paid':
+        return 'text-green-700 bg-green-100';
+      case 'Pending':
+        return 'text-yellow-700 bg-yellow-100';
+      case 'Unpaid':
+        return 'text-red-700 bg-red-100';
+      default:
+        return 'text-gray-700 bg-gray-100';
+    }
   };
 
   return (
@@ -69,67 +71,86 @@ const CompletedJobsCard = () => {
         >
           Recent Completed Jobs
         </motion.h2>
+
         {loading ? (
-          <div>Loading...</div>
-        ) : error ? (
-          <div className="text-red-600">{error}</div>
+          <div className="flex justify-center py-8">
+            <div className="spinner-border text-indigo-600" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        ) : completedJobs.length === 0 ? (
+          <div className="text-gray-500">No completed jobs found.</div>
         ) : (
           <div className="flex flex-col gap-4">
-            {completedJobs.length === 0 ? (
-              <div>No completed jobs found.</div>
-            ) : (
-              completedJobs.map((job, index) => (
-                <motion.div
-                  key={job._id}
-                  className="pb-4 border-b border-gray-200 last:border-b-0"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.2 + index * 0.1 }}
-                  whileHover={{ scale: 1.01 }}
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start">
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2">
-                        <span className="px-3 py-1 bg-green-500 text-white rounded-full text-sm flex items-center">
-                          <i className="bi bi-check me-1"></i>
-                          Completed
-                        </span>
-                        <span className="text-sm text-gray-600">
-                          {job.scheduledTime
-                            ? new Date(job.scheduledTime).toLocaleDateString()
-                            : job.date}
-                        </span>
-                      </div>
-                      <h3 className="text-base font-semibold text-gray-800 mt-2">
-                        {job.serviceDetails || job.type}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-1">{job.customer || job.userId?.name || ''}</p>
-                      <p className="text-sm text-gray-600 mb-1">
-                        {job.address
-                          ? `${job.address}${job.city && job.state ? `, ${job.city}, ${job.state}` : ''}`
-                          : job.city && job.state
-                            ? `${job.city}, ${job.state}`
-                            : job.userId?.city && job.userId?.state
-                              ? `${job.userId.city}, ${job.userId.state}`
-                              : 'Location not specified'}
-                      </p>
-
-                      {job.userId?.city && job.userId?.state && (
-                        <div className="mt-4">
-                          {/* Responsive map container */}
-                          <div style={{ width: '100%', aspectRatio: '16/9', minHeight: '200px' }}>
-                            <Map city={job.userId.city} state={job.userId.state} />
-                          </div>
-                        </div>
-                      )}
+            {completedJobs.map((job, index) => (
+              <motion.div
+                key={job._id}
+                className="pb-4 border-b border-gray-200 last:border-b-0 overflow-hidden"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.2 + index * 0.1 }}
+                whileHover={{ scale: 1.01 }}
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start">
+                  {/* Left Section */}
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <span className="px-3 py-1 bg-green-500 text-white rounded-full text-sm flex items-center">
+                        <i className="bi bi-check me-1"></i> Completed
+                      </span>
+                      <span className="text-sm text-gray-600">
+                        {job.scheduledTime
+                          ? new Date(job.scheduledTime).toLocaleDateString()
+                          : 'Date not available'}
+                      </span>
                     </div>
+
+                    <h3 className="text-base font-semibold text-gray-800 mt-2">
+                      {job.serviceDetails || job.type || 'Service completed'}
+                    </h3>
+
+                    <p className="text-sm text-gray-600 mb-1">
+                      {job.customer || job.userId?.name || 'Unknown Customer'}
+                    </p>
+
+                    <p className="text-sm text-gray-600 mb-1">
+                      {job.address
+                        ? `${job.address}${job.city && job.state ? `, ${job.city}, ${job.state}` : ''}`
+                        : job.userId?.city && job.userId?.state
+                        ? `${job.userId.city}, ${job.userId.state}`
+                        : 'Location not specified'}
+                    </p>
+
+                    {/* Map */}
+                    {job.userId?.city && job.userId?.state && (
+                      <div className="mt-4">
+                        <div className="w-full aspect-video min-h-[200px] rounded-xl overflow-hidden shadow">
+                          <Map city={job.userId.city} state={job.userId.state} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Section */}
+                  <div className="flex flex-col items-end">
                     <span className="text-base font-semibold text-green-600">
                       {job.price ? `₹${job.price}` : ''}
                     </span>
+
+                    {job.paymentStatus && (
+                      <span
+                        className={`mt-1 px-3 py-1 text-xs font-semibold rounded-full flex items-center gap-1.5 ${getPaymentStatusStyle(job.paymentStatus)}`}
+                      >
+                        {job.paymentStatus === 'Paid' && <i className="bi bi-check-circle-fill"></i>}
+                        {job.paymentStatus === 'Pending' && <i className="bi bi-hourglass-split"></i>}
+                        {job.paymentStatus === 'Unpaid' && <i className="bi bi-x-circle-fill"></i>}
+                        {job.paymentStatus}
+                      </span>
+                    )}
                   </div>
-                </motion.div>
-              ))
-            )}
+                </div>
+              </motion.div>
+            ))}
           </div>
         )}
       </div>
