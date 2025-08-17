@@ -27,13 +27,13 @@ const BookPage = () => {
   const serviceId = providerId;
   const userId = JSON.parse(localStorage.getItem('userData'))?._id || localStorage.getItem('userId');
 
-  // // Redirect if no providerId or selectedService
-  // useEffect(() => {
-  //   if (!providerId || !selectedService) {
-  //     alert('Invalid access. Please select a service provider first.');
-  //     navigate('/#services', { replace: true });
-  //   }
-  // }, [providerId, selectedService, navigate]);
+  // Redirect if no providerId or selectedService
+  useEffect(() => {
+    if (!providerId || !selectedService) {
+      alert('Invalid access. Please select a service provider first.');
+      navigate('/#services', { replace: true });
+    }
+  }, [providerId, selectedService, navigate]);
 
   useEffect(() => {
     window.scrollTo(0, 0);

@@ -19,14 +19,14 @@ const PaymentPage = () => {
       navigate('/login', { replace: true });
     }
   }, [navigate]);
-   const selectedService = location.state?.service;
-  const providerId = selectedService?.id || location.state?.serviceId;
-  useEffect(() => {
-      if (!providerId || !selectedService) {
-        alert('Invalid access. Please select a service provider first.');
-        navigate('/#services', { replace: true });
-      }
-    }, [providerId, selectedService, navigate]);
+  //  const selectedService = location.state?.service;
+  // const providerId = selectedService?.id || location.state?.serviceId;
+  // useEffect(() => {
+  //     if (!providerId || !selectedService) {
+  //       alert('Invalid access. Please select a service provider first.');
+  //       navigate('/#services', { replace: true });
+  //     }
+  //   }, [providerId, selectedService, navigate]);
   
   const handlePayNow = () => {
     setIsProcessing(true);
