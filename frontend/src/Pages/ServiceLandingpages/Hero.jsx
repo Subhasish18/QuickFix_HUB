@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../UserLandingPage/Navbar';
 import StatsCard from './StatsCard';
@@ -7,18 +7,27 @@ import ProviderProfileCard from './ProviderProfileCard';
 import JobRequestsCard from './JobRequestCard';
 import CompletedJobsCard from './CompletedJobsCard';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-// Removed Bootstrap CSS to avoid conflicts with Tailwind
+import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+  const navigate = useNavigate();
   const tabs = [
     { key: 'profile', label: 'Profile & Ratings', icon: 'bi-person' },
     { key: 'stats', label: 'Stats', icon: 'bi-bar-chart' },
     { key: 'jobRequests', label: 'Job Requests', icon: 'bi-inbox' },
     { key: 'completedJobs', label: 'Completed Jobs', icon: 'bi-check-circle' },
   ];
+
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    // Only allow access if userData exists and role is 'provider'
+    if (!userData || userData.role !== 'provider') {
+      alert('Please login as provider to access this page.');
+      navigate('/login', { replace: true });
+    }
+  }, [navigate]);
 
   const renderContent = () => {
     switch (activeTab) {
