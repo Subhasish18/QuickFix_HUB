@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; 
 import { Check, CreditCard, Shield, Clock, DollarSign, IndianRupee } from "lucide-react"; 
 import Navbar from "../UserLandingPage/Navbar";
@@ -11,6 +11,23 @@ const PaymentPage = () => {
   const [amount, setAmount] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Only allow access if userData exists and role is 'user'
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (!userData || userData.role !== 'user') {
+      alert('Please login as user to access the payment page.');
+      navigate('/login', { replace: true });
+    }
+  }, [navigate]);
+   const selectedService = location.state?.service;
+  const providerId = selectedService?.id || location.state?.serviceId;
+  useEffect(() => {
+      if (!providerId || !selectedService) {
+        alert('Invalid access. Please select a service provider first.');
+        navigate('/#services', { replace: true });
+      }
+    }, [providerId, selectedService, navigate]);
+  
   const handlePayNow = () => {
     setIsProcessing(true);
     setTimeout(() => {
