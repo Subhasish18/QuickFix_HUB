@@ -22,6 +22,13 @@ const PaymentPage = () => {
       setAmount(price.toString());
     }
   }, [price]);
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (!userData || userData.role !== 'user') {
+      alert('Please login as user to access the payment page.');
+      navigate('/login', { replace: true });
+    }
+  }, [navigate]);
 
   const handlePayNow = async () => {
     setIsProcessing(true);
