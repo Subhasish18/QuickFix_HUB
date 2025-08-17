@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '../UserLandingPage/Navbar';
 import Footer from './Footer';
 import StatsCard from './StatsCard';
@@ -13,12 +13,33 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const BookPage = () => {
   const location = useLocation();
-  const selectedService = location.state?.service;
-  
-  const providerId = location.state?.service?.id || location.state?.serviceId;
-  const serviceId = providerId; 
-  const userId = localStorage.getItem('userId');
+  const navigate = useNavigate();
 
+  // Check if user is logged in and is a user (not provider)
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (!userData || userData.role !== 'user') {
+      alert('Please login as user to book a service.');
+      navigate('/login', { replace: true });
+    }
+  }, [navigate]);
+
+  const selectedService = location.state?.service;
+  const providerId = selectedService?.id || location.state?.serviceId;
+  const serviceId = providerId;
+  const userId =
+    JSON.parse(localStorage.getItem('userData'))?._id ||
+    localStorage.getItem('userId');
+
+  // Redirect if no providerId or selectedService
+  useEffect(() => {
+    if (!providerId || !selectedService) {
+      alert('Invalid access. Please select a service provider first.');
+      navigate('/#services', { replace: true });
+    }
+  }, [providerId, selectedService, navigate]);
+
+  // Scroll to top when page loads
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);

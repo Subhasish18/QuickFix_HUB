@@ -11,12 +11,31 @@ import "react-toastify/dist/ReactToastify.css";
 const PaymentPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { bookingId, price } = location.state || {};
+  const { bookingId, price, service, serviceId } = location.state || {};
 
   const [amount, setAmount] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
+  // Only allow access if userData exists and role is 'user'
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("userData"));
+    if (!userData || userData.role !== "user") {
+      alert("Please login as user to access the payment page.");
+      navigate("/login", { replace: true });
+    }
+  }, [navigate]);
+
+  // Ensure service/provider is valid
+  useEffect(() => {
+    const providerId = service?.id || serviceId;
+    if (!providerId || !service) {
+      alert("Invalid access. Please select a service provider first.");
+      navigate("/#services", { replace: true });
+    }
+  }, [service, serviceId, navigate]);
+
+  // Autofill amount from price if available
   useEffect(() => {
     if (price) {
       setAmount(price.toString());
@@ -35,9 +54,9 @@ const PaymentPage = () => {
       });
 
       console.log(`Payment of ${amount} processed for booking ${bookingId}.`);
-      toast.success("Payment successful Please Wait!");
+      toast.success("✅ Payment successful. Please wait!");
       toast.info("Redirecting to Booking Details...");
-      setTimeout(() => navigate("/userDetails"), 2000); // redirect after toast
+      setTimeout(() => navigate("/userDetails"), 2000);
     } catch (error) {
       console.error("Payment failed:", error);
       toast.error("❌ Payment failed. Please try again.");
@@ -69,6 +88,7 @@ const PaymentPage = () => {
                 </p>
               </div>
 
+              {/* Amount Input */}
               <div className="mb-8">
                 <label
                   htmlFor="amount"
@@ -78,10 +98,7 @@ const PaymentPage = () => {
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <IndianRupee
-                      className="h-5 w-5 text-slate-400"
-                      aria-hidden="true"
-                    />
+                    <IndianRupee className="h-5 w-5 text-slate-400" />
                   </div>
                   <input
                     type="number"
@@ -102,6 +119,7 @@ const PaymentPage = () => {
                 )}
               </div>
 
+              {/* Razorpay Branding */}
               <div className="flex justify-center mb-8">
                 <a
                   href="https://razorpay.com"
@@ -112,6 +130,7 @@ const PaymentPage = () => {
                 </a>
               </div>
 
+              {/* Pay Button */}
               <button
                 onClick={() => setShowConfirm(true)}
                 disabled={isProcessing || !isValidAmount}

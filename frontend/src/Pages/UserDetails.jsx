@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 import UserProfile from './Components/UserProfile/UserProfile';
 import UserBookings from './Components/UserBookings/UserBookings';
 import UserEditForm from './Components/UserEditForm/UserEditForm';
@@ -20,8 +21,18 @@ const UserDetails = ({ onLogout }) => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
+  const navigate = useNavigate();
 
-  // single confirm dialog state
+  // Access checker: Only allow if logged in as user
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (!userData || userData.role !== 'user') {
+      alert('Please login as user to access this page.');
+      navigate('/login', { replace: true });
+    }
+  }, [navigate]);
+
+  // confirm dialog state
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [confirmTitle, setConfirmTitle] = useState('Confirm Action');
@@ -92,7 +103,6 @@ const UserDetails = ({ onLogout }) => {
   const handleLogout = async () => {
     try {
       const auth = getAuth();
-      // clear client state first
       localStorage.removeItem('userData');
       sessionStorage.removeItem('showLoginMessage');
       await signOut(auth);
@@ -108,13 +118,11 @@ const UserDetails = ({ onLogout }) => {
     }
   };
 
-  // open edit
+  // editing
   const handleStartEdit = () => {
-    // Editing is non-destructive; no need to confirm opening form.
     setIsEditing(true);
   };
 
-  // save (after EditForm submits validated data)
   const handleRequestSave = (formData) => {
     openConfirm({
       title: 'Confirm Update',
@@ -162,7 +170,7 @@ const UserDetails = ({ onLogout }) => {
     }
   };
 
-  // tabs/content
+  // render content
   const renderContent = () => {
     if (loading) return <BookLoader />;
     if (error) return <div className="error-message">{error}</div>;
@@ -174,8 +182,8 @@ const UserDetails = ({ onLogout }) => {
           show={true}
           onHide={() => setIsEditing(false)}
           user={user}
-          onSubmit={handleRequestSave}     // calls parent, which confirms & saves
-          submitting={saving}               // show spinner in button while saving
+          onSubmit={handleRequestSave}
+          submitting={saving}
         />
       );
     }
@@ -184,6 +192,9 @@ const UserDetails = ({ onLogout }) => {
       case 'profile':
         return <UserProfile user={user} onEdit={handleStartEdit} />;
       case 'bookings':
+        if (!user._id) {
+          return <div className="error-message">User ID not found. Please try again.</div>;
+        }
         return <UserBookings userId={user._id} />;
       default:
         return <UserProfile user={user} onEdit={handleStartEdit} />;
