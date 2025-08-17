@@ -1,6 +1,10 @@
+import React, { useEffect, useState } from 'react';
+import { Card, Spinner } from 'react-bootstrap';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { useEffect, useState } from 'react';
 
 // Seeded random number generator for consistent stats
 const seededRandom = (seed) => {
@@ -11,7 +15,7 @@ const seededRandom = (seed) => {
   };
 };
 
-// Create seed from string (providerId or provider name)
+// Create seed from string (providerId or providerName)
 const createSeed = (str) => {
   if (!str) return Math.floor(Math.random() * 100000);
   let seed = 0;
@@ -22,231 +26,296 @@ const createSeed = (str) => {
   return seed;
 };
 
-const UnifiedStatsCard = ({ 
-  providerId, 
+const UnifiedStatsCard = ({
+  providerId,
   providerName,
-  title = "Performance Stats",
-  mode = "default", 
+  title = 'Performance Stats',
+  mode = 'default',
   showTitle = true,
-  customStats = null, 
-  className = ""
+  customStats = null,
+  className = '',
 }) => {
   const [stats, setStats] = useState([]);
   const [otherStats, setOtherStats] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const generateRandomStats = () => {
+    try {
+      const seedSource = providerId || providerName || 'default';
+      const seed = createSeed(seedSource);
+      const random = seededRandom(seed);
 
-    const seedSource = providerId || providerName || 'default';
-    const seed = createSeed(seedSource);
-    const random = seededRandom(seed);
+      const randomPercent = (min = 60, max = 100) => Math.floor(random() * (max - min + 1)) + min;
+      const randomJobs = (min = 5, max = 25) => Math.floor(random() * (max - min + 1)) + min;
+      const randomEarnings = (min = 1000, max = 8000) => Math.floor(random() * (max - min + 1)) + min;
 
-    const randomPercent = (min = 60, max = 100) => Math.floor(random() * (max - min + 1)) + min;
-    const randomJobs = (min = 5, max = 25) => Math.floor(random() * (max - min + 1)) + min;
-    const randomEarnings = (min = 1000, max = 8000) => Math.floor(random() * (max - min + 1)) + min;
+      const newStats = [
+        {
+          title: 'This Month',
+          jobs: randomJobs(8, 25),
+          earnings: `${randomEarnings(2000, 8000)}`,
+          percent: randomPercent(70, 95),
+        },
+        {
+          title: 'Previous Month',
+          jobs: randomJobs(5, 20),
+          earnings: `${randomEarnings(1500, 6000)}`,
+          percent: randomPercent(65, 90),
+        },
+      ];
 
-    const newStats = [
-      {
-        title: "This Month",
-        jobs: randomJobs(8, 25),
-        earnings: `${randomEarnings(2000, 8000)}`,
-        percent: randomPercent(70, 95)
-      },
-      {
-        title: "Previous Month",
-        jobs: randomJobs(5, 20),
-        earnings: `${randomEarnings(1500, 6000)}`,
-        percent: randomPercent(65, 90)
-      }
-    ];
+      const newOtherStats = [
+        {
+          label: 'Acceptance Rate',
+          value: `${Math.floor(random() * 16) + 85}%`,
+          icon: 'bi-check-circle',
+          color: 'text-success',
+        },
+        {
+          label: 'Avg. Rating',
+          value: `${(random() * 1.3 + 3.7).toFixed(1)}/5`,
+          icon: 'bi-star-fill',
+          color: 'text-warning',
+        },
+        {
+          label: 'Response Time',
+          value: `${Math.floor(random() * 35) + 5} min`,
+          icon: 'bi-clock',
+          color: 'text-primary',
+        },
+      ];
 
-    const newOtherStats = [
-      { 
-        label: 'Acceptance Rate', 
-        value: `${Math.floor(random() * 16) + 85}%`,
-        icon: 'bi-check-circle',
-        color: 'text-green-600'
-      },
-      { 
-        label: 'Avg. Rating', 
-        value: `${(random() * 1.3 + 3.7).toFixed(1)}/5`,
-        icon: 'bi-star-fill',
-        color: 'text-yellow-600'
-      },
-      { 
-        label: 'Response Time', 
-        value: `${Math.floor(random() * 35) + 5} min`,
-        icon: 'bi-clock',
-        color: 'text-blue-600'
-      },
-    ];
-
-    setStats(newStats);
-    setOtherStats(newOtherStats);
+      setStats(newStats);
+      setOtherStats(newOtherStats);
+      setLoading(false);
+      toast.success('Performance stats loaded successfully 🚀', { toastId: 'stats-loaded' });
+    } catch (error) {
+      toast.error('Failed to load performance stats ❌', { toastId: 'stats-error' });
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     if (customStats) {
-      setStats(customStats.mainStats || []);
-      setOtherStats(customStats.otherStats || []);
+      try {
+        setStats(
+          customStats.mainStats || [
+            {
+              title: 'This Month',
+              jobs: customStats.jobsCompleted || 0,
+              earnings: `${customStats.earnings || 0}`,
+              percent: parseFloat(customStats.satisfactionRate) || 0,
+            },
+          ],
+        );
+        setOtherStats(
+          customStats.otherStats || [
+            {
+              label: 'Acceptance Rate',
+              value: `${customStats.acceptanceRate || '0%'}`,
+              icon: 'bi-check-circle',
+              color: 'text-success',
+            },
+            {
+              label: 'Avg. Rating',
+              value: `${customStats.satisfactionRate || '0/5'}`,
+              icon: 'bi-star-fill',
+              color: 'text-warning',
+            },
+            {
+              label: 'Response Time',
+              value: `${customStats.responseTime || '0 min'}`,
+              icon: 'bi-clock',
+              color: 'text-primary',
+            },
+          ],
+        );
+        toast.info('Showing custom performance stats 📊', { toastId: 'stats-custom' });
+        setLoading(false);
+      } catch {
+        toast.error('Error applying custom stats ❌', { toastId: 'stats-custom-error' });
+        setLoading(false);
+      }
     } else {
       generateRandomStats();
     }
   }, [providerId, providerName, customStats]);
 
+  if (loading) {
+    return (
+      <Card className={`shadow-sm border-0 ${className}`}>
+        <Card.Body className="text-center">
+          <Spinner animation="border" variant="primary" />
+          <p className="mt-2">Loading performance stats...</p>
+        </Card.Body>
+      </Card>
+    );
+  }
 
-  if (mode === "minimal") {
+  if (mode === 'minimal') {
     return (
       <motion.div
-        className={`bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-gray-200 p-4 ${className}`}
+        as={Card}
+        className={`shadow-sm border-0 ${className}`}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
       >
-        <div className="grid grid-cols-3 gap-3">
-          {otherStats.map((item, index) => (
-            <div key={index} className="text-center">
-              <p className="text-xs text-gray-500 mb-1">{item.label}</p>
-              <p className="text-sm font-semibold text-indigo-900">{item.value}</p>
-            </div>
-          ))}
-        </div>
+        <Card.Body>
+          <div className="row g-3">
+            {otherStats.map((item, index) => (
+              <div key={index} className="col-4 text-center">
+                <p className="text-muted small mb-1">{item.label}</p>
+                <p className="fw-bold">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        </Card.Body>
       </motion.div>
     );
   }
 
-  if (mode === "compact") {
+  if (mode === 'compact') {
     return (
       <motion.div
-        className={`bg-white/90 backdrop-blur-sm rounded-lg shadow-md border border-gray-200 overflow-hidden ${className}`}
+        as={Card}
+        className={`shadow-sm border-0 ${className}`}
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <div className="p-4">
+        <Card.Body>
           {showTitle && (
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">{title}</h3>
+            <h5 className="fw-bold mb-4">{providerName ? `${providerName}'s ${title}` : title}</h5>
           )}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="row g-3">
             {otherStats.map((item, index) => (
-              <div key={index} className="bg-gray-50 p-3 rounded-lg text-center">
-                <p className="text-xs text-gray-600 mb-1">{item.label}</p>
-                <p className="text-base font-semibold text-indigo-900">{item.value}</p>
+              <div key={index} className="col-4">
+                <div className="bg-light p-3 rounded text-center">
+                  <p className="text-muted small mb-1">{item.label}</p>
+                  <p className="fw-bold">{item.value}</p>
+                </div>
               </div>
             ))}
           </div>
-        </div>
+        </Card.Body>
       </motion.div>
     );
   }
 
   return (
     <motion.div
-      className={`bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 overflow-hidden ${className}`}
+      as={Card}
+      className={`shadow-sm border-0 ${className}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="p-4 sm:p-6">
+      <Card.Body className="p-4">
         {showTitle && (
-          <motion.h2
-            className="text-xl sm:text-2xl font-bold text-indigo-900 mb-4"
+          <motion.h5
+            className="fw-bold mb-4"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
           >
-            {title}
-          </motion.h2>
+            {providerName ? `${providerName}'s ${title}` : title}
+          </motion.h5>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div className="row g-4 mb-4">
           {stats.map((stat, index) => (
-            <motion.div
-              key={index}
-              className="flex items-center gap-4 p-3 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 + index * 0.1 }}
-              whileHover={{ scale: 1.02 }}
-            >
-              <div className="relative w-16 h-16 flex-shrink-0">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                  <path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="#e5e7eb"
-                    strokeWidth="3"
-                  />
-                  <motion.path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="#4f46e5"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeDasharray={`${stat.percent}, 100`}
-                    initial={{ strokeDashoffset: 100 }}
-                    animate={{ strokeDashoffset: 0 }}
-                    transition={{ duration: 0.8, delay: 0.3 + index * 0.1 }}
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-indigo-600 text-sm font-bold">{stat.percent}%</span>
+            <div key={index} className="col-12 col-sm-6">
+              <motion.div
+                className="bg-light p-3 rounded d-flex align-items-center"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: 0.2 + index * 0.1 }}
+                whileHover={{ scale: 1.02 }}
+              >
+                <div className="me-3">
+                  <div className="position-relative" style={{ width: '64px', height: '64px' }}>
+                    <svg className="w-100 h-100" viewBox="0 0 36 36">
+                      <path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke="#e9ecef"
+                        strokeWidth="3"
+                      />
+                      <motion.path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke="#0d6efd"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeDasharray={`${stat.percent}, 100`}
+                        initial={{ strokeDashoffset: 100 }}
+                        animate={{ strokeDashoffset: 0 }}
+                        transition={{ duration: 0.8, delay: 0.3 + index * 0.1 }}
+                      />
+                    </svg>
+                    <div className="position-absolute top-50 start-50 translate-middle text-primary fw-bold">
+                      {stat.percent}%
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-base font-semibold text-gray-800 mb-1">{stat.title}</h3>
-                <p className="text-sm text-gray-600 mb-1">
-                  <i className="bi bi-briefcase mr-1"></i>
-                  {stat.jobs} jobs completed
-                </p>
-                <p className="text-lg font-bold text-indigo-600">
-                  <i className="bi bi-currency-rupee mr-1"></i>
-                  {stat.earnings}
-                </p>
-              </div>
-            </motion.div>
+                <div>
+                  <h6 className="fw-bold mb-1">{stat.title}</h6>
+                  <p className="text-muted small mb-1">
+                    <i className="bi bi-briefcase me-1"></i>
+                    {stat.jobs} jobs completed
+                  </p>
+                  <p className="text-primary fw-bold">
+                    <i className="bi bi-currency-dollar me-1"></i>
+                    {stat.earnings}
+                  </p>
+                </div>
+              </motion.div>
+            </div>
           ))}
         </div>
 
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+          className="row g-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.4 }}
         >
           {otherStats.map((item, index) => (
-            <motion.div
-              key={index}
-              className="bg-white p-4 rounded-lg border border-indigo-100 text-center shadow-sm"
-              whileHover={{ scale: 1.03, boxShadow: "0 8px 25px rgba(79, 70, 229, 0.15)" }}
-              transition={{ duration: 0.2 }}
-            >
-              {item.icon && (
-                <i className={`${item.icon} text-2xl ${item.color || 'text-indigo-600'} mb-2 block`}></i>
-              )}
-              <p className="text-xs text-gray-600 mb-1 uppercase tracking-wide">{item.label}</p>
-              <p className="text-lg font-bold text-gray-900">{item.value}</p>
-            </motion.div>
+            <div key={index} className="col-12 col-sm-4">
+              <motion.div
+                className="bg-white p-3 rounded border shadow-sm text-center"
+                whileHover={{ scale: 1.03 }}
+                transition={{ duration: 0.2 }}
+              >
+                {item.icon && (
+                  <i className={`bi ${item.icon} fs-4 ${item.color} mb-2`}></i>
+                )}
+                <p className="text-muted small mb-1">{item.label}</p>
+                <p className="fw-bold">{item.value}</p>
+              </motion.div>
+            </div>
           ))}
         </motion.div>
 
         <motion.div
-          className="mt-6 pt-4 border-t border-indigo-100"
+          className="mt-4 pt-4 border-top"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.6 }}
         >
-          <div className="flex justify-between items-center text-sm text-gray-600">
-            <span className="flex items-center">
-              <i className="bi bi-trending-up text-green-500 mr-1"></i>
+          <div className="d-flex justify-content-between text-muted small">
+            <span>
+              <i className="bi bi-trending-up text-success me-1"></i>
               Performance trending upward
             </span>
-            <span className="flex items-center">
-              <i className="bi bi-shield-check text-blue-500 mr-1"></i>
+            <span>
+              <i className="bi bi-shield-check text-primary me-1"></i>
               Verified provider
             </span>
           </div>
         </motion.div>
-      </div>
+      </Card.Body>
     </motion.div>
   );
 };

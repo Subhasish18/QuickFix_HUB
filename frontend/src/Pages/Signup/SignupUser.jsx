@@ -6,6 +6,8 @@ import auth from "../../utils/Firebase";
 import Footer from '../UserLandingPage/Footer';
 import Navbar from '../UserLandingPage/Navbar';
 import { FaUser, FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const SignupUser = () => {
   const [formData, setFormData] = useState({
@@ -21,7 +23,6 @@ const SignupUser = () => {
   };
 
   const saveUserToBackend = async (firebaseUser) => {
-    // Get Firebase ID token for authentication
     const idToken = await firebaseUser.getIdToken();
     await axios.post(
       "http://localhost:5000/api/user-details",
@@ -43,10 +44,10 @@ const SignupUser = () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       await saveUserToBackend(userCredential.user);
-      alert('User signed up successfully!');
+      toast.success("🎉 User signed up successfully!");
       navigate('/additional-details/user');
     } catch (err) {
-      alert(err.message);
+      toast.error(`❌ ${err.message}`);
     }
   };
 
@@ -55,10 +56,10 @@ const SignupUser = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       await saveUserToBackend(result.user);
-      alert('User signed up successfully with Google!');
+      toast.success("🎉 Signed up successfully with Google!");
       navigate('/additional-details/user');
     } catch (err) {
-      alert(err.message);
+      toast.error(`❌ ${err.message}`);
     }
   };
 

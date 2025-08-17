@@ -8,15 +8,15 @@ import ProfileCard from './ProfileCard';
 import BookingForm from './BookingForm';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const BookPage = () => {
   const location = useLocation();
   const selectedService = location.state?.service;
   
-  
   const providerId = location.state?.service?.id || location.state?.serviceId;
   const serviceId = providerId; 
-
   const userId = localStorage.getItem('userId');
 
   useEffect(() => {
@@ -27,9 +27,8 @@ const BookPage = () => {
     <>
       <Navbar />
       <div className="container py-4">
-        
-
         <h1 className="h2 fw-bold mb-4">Service Provider Dashboard</h1>
+
         {selectedService?.city && selectedService?.state && (
           <div className="mb-2 text-muted">
             Location: {selectedService.city}, {selectedService.state}
@@ -43,19 +42,22 @@ const BookPage = () => {
               <StatsCard />
             </div>
           </div>
+
           <div className="col-12 col-md-4">
             <BookingForm serviceId={serviceId} userId={userId} />
           </div>
+
           <div className="col-12 col-md-4">
             <div className="d-flex flex-column gap-4">
-              <RatingsCard
-                providerId={providerId || 'default'}
-              />
+              <RatingsCard providerId={providerId || 'default'} />
             </div>
           </div>
         </div>
       </div>
       <Footer />
+
+      {/* Toast container for showing notifications */}
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
     </>
   );
 };

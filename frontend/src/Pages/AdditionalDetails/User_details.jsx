@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { toast } from 'react-toastify'; // ✅ toast import
 import Footer from './Footer';
 import Navbar from './Navbar';
 
@@ -22,6 +23,7 @@ const UserDetails = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // ✅ Check auth state
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -33,6 +35,7 @@ const UserDetails = () => {
           email: currentUser.email || '',
         }));
       } else {
+        toast.warning("Please login to continue.");
         navigate('/login');
       }
       setLoading(false);
@@ -40,6 +43,7 @@ const UserDetails = () => {
     return () => unsubscribe();
   }, [navigate]);
 
+  // ✅ Fetch states
   useEffect(() => {
     const fetchStates = async () => {
       try {
@@ -49,12 +53,15 @@ const UserDetails = () => {
         );
         setStates(response.data || []);
       } catch (err) {
+        console.error("Error fetching states:", err);
         setStates([]);
+        toast.error("Failed to load states. Please refresh and try again.");
       }
     };
     fetchStates();
   }, []);
 
+  // ✅ Fetch cities when state changes
   useEffect(() => {
     if (!formData.state) {
       setCities([]);
@@ -73,27 +80,31 @@ const UserDetails = () => {
         );
         setCities(response.data || []);
       } catch (err) {
+        console.error("Error fetching cities:", err);
         setCities([]);
+        toast.error("Failed to load cities. Please refresh and try again.");
       }
     };
     fetchCities();
   }, [formData.state, states]);
 
+  // ✅ Handle input change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // ✅ Submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!user) {
-      alert("Authentication error. Please log in again.");
+      toast.error("Authentication error. Please log in again.");
       return;
     }
 
     try {
       const idToken = await user.getIdToken();
-      // Use PUT for update
+
       const res = await axios.put(
         'http://localhost:5000/api/user-details',
         formData,
@@ -102,10 +113,13 @@ const UserDetails = () => {
         }
       );
 
-      alert(res.data.message || "Details updated!");
+      toast.success(res.data.message || "Details updated successfully!");
       navigate('/login');
+      setTimeout(() => window.location.reload(), 200);
+
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to update user details. Please try again.');
+      console.error("Error updating user details:", err);
+      toast.error(err.response?.data?.message || 'Failed to update user details. Please try again.');
     }
   };
 
@@ -115,6 +129,7 @@ const UserDetails = () => {
 
   return (
     <>
+      <Navbar />
       <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light">
         <div className="card shadow-lg p-4" style={{ maxWidth: '400px', width: '100%' }}>
           <h3 className="mb-4 text-center text-primary">Enter Your Details</h3>
@@ -191,6 +206,7 @@ const UserDetails = () => {
           </form>
         </div>
       </div>
+      <Footer />
     </>
   );
 };

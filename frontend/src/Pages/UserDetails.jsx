@@ -1,146 +1,198 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import UserProfile from './Components/UserProfile/UserProfile';
 import UserBookings from './Components/UserBookings/UserBookings';
 import UserEditForm from './Components/UserEditForm/UserEditForm';
 import BookLoader from './Components/BookLoader';
 import Navbar from './UserLandingPage/Navbar';
+import ConfirmDialog from '../components/shared/ConfirmDialog';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import './UserDetails.css';
 
-const UserDetails = () => {
+const UserDetails = ({ onLogout }) => {
+  // data + ui state
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
 
-  // Fetch user data from server
+  // single confirm dialog state
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [confirmTitle, setConfirmTitle] = useState('Confirm Action');
+  const [confirmMessage, setConfirmMessage] = useState('Are you sure you want to continue?');
+
+  // --- helpers ---
+  const openConfirm = ({ action, title, message }) => {
+    setConfirmAction(() => action);
+    if (title) setConfirmTitle(title);
+    if (message) setConfirmMessage(message);
+    setConfirmOpen(true);
+  };
+
+  const closeConfirm = () => {
+    setConfirmOpen(false);
+    setConfirmAction(null);
+    setConfirmTitle('Confirm Action');
+    setConfirmMessage('Are you sure you want to continue?');
+  };
+
   const fetchUserProfile = async (idToken) => {
     try {
       setLoading(true);
-      console.log('Fetching user profile'); // Debug log
       const response = await axios.get('http://localhost:5000/api/user-details/profile', {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
+        headers: { Authorization: `Bearer ${idToken}` },
       });
-      console.log('User profile fetched:', response.data); // Debug log
-      if (!response.data._id) {
-        throw new Error('Invalid user data: ID not found');
-      }
+      if (!response.data._id) throw new Error('Invalid user data: ID not found');
       setUser(response.data);
       setError(null);
     } catch (err) {
-      console.error('Error fetching user profile:', err.message); // Debug log
-      setError(err.message || 'Failed to load user profile');
+      console.error('Error fetching user profile:', err);
+      const msg = err?.response?.data?.message || err.message || 'Failed to load user profile';
+      setError(msg);
+      toast.error(msg, {
+        toastId: 'user-profile-error',
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  // Initial fetch on auth state change
+  // auth watcher
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      console.log('Auth state changed:', !!currentUser); // Debug log
       if (!currentUser) {
-        console.log('No authenticated user'); // Debug log
+        setUser(null);
         setError('User not authenticated. Please log in.');
+        toast.error('User not authenticated. Please log in.', {
+          toastId: 'user-auth-error',
+          position: 'top-right',
+          autoClose: 5000,
+          hideProgressBar: true,
+        });
         setLoading(false);
         return;
       }
-
       const idToken = await currentUser.getIdToken(true);
       await fetchUserProfile(idToken);
     });
-
     return () => unsubscribe();
   }, []);
 
-  // Handle profile update and re-fetch
-  const handleUpdateUser = async (updatedUserData) => {
-    console.log('Updating user with data:', updatedUserData); // Debug log
-    // Temporarily update state to reflect changes immediately
-    setUser((prevUser) => ({
-      ...prevUser,
-      ...updatedUserData,
-    }));
-    setIsEditing(false);
-
-    // Re-fetch from server to ensure synchronization
+  // logout
+  const handleLogout = async () => {
     try {
       const auth = getAuth();
-      const currentUser = auth.currentUser;
-      if (!currentUser) {
-        throw new Error('User not authenticated');
-      }
-      const idToken = await currentUser.getIdToken(true);
-      await fetchUserProfile(idToken);
+      // clear client state first
+      localStorage.removeItem('userData');
+      sessionStorage.removeItem('showLoginMessage');
+      await signOut(auth);
+      onLogout && onLogout();
     } catch (err) {
-      console.error('Error re-fetching user profile after update:', err.message); // Debug log
-      setError('Failed to refresh profile. Please reload the page.');
+      console.error('Logout error:', err);
+      toast.error('Failed to log out. Please try again.', {
+        toastId: 'logout-error',
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
     }
   };
 
-  const handleTabClick = (tab) => {
-    console.log('Tab clicked:', tab); // Debug log
-    setActiveTab(tab);
+  // open edit
+  const handleStartEdit = () => {
+    // Editing is non-destructive; no need to confirm opening form.
+    setIsEditing(true);
   };
 
+  // save (after EditForm submits validated data)
+  const handleRequestSave = (formData) => {
+    openConfirm({
+      title: 'Confirm Update',
+      message: 'Are you sure you want to save these profile changes?',
+      action: () => saveUser(formData),
+    });
+  };
+
+  const saveUser = async (formData) => {
+    try {
+      setSaving(true);
+      const auth = getAuth();
+      const current = auth.currentUser;
+      if (!current) throw new Error('User not authenticated');
+      const token = await current.getIdToken(true);
+
+      const { data } = await axios.put(
+        'http://localhost:5000/api/user-details/edit',
+        formData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const updated = data?.user || data;
+      setUser(updated);
+      setIsEditing(false);
+
+      toast.success('✅ Profile updated successfully!', {
+        toastId: 'profile-update-success',
+        position: 'top-right',
+        autoClose: 4000,
+        hideProgressBar: true,
+      });
+    } catch (err) {
+      console.error('Update error:', err);
+      const msg = err?.response?.data?.message || err.message || 'Failed to update profile';
+      toast.error(msg, {
+        toastId: 'profile-update-error',
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: true,
+      });
+    } finally {
+      setSaving(false);
+      closeConfirm();
+    }
+  };
+
+  // tabs/content
   const renderContent = () => {
-    console.log('renderContent called:', { loading, error, user, activeTab, isEditing }); // Debug log
-    if (loading) {
-      console.log('Rendering BookLoader'); // Debug log
-      return <BookLoader />;
-    }
-    if (error) {
-      console.log('Rendering error:', error); // Debug log
-      return <div className="error-message">{error}</div>;
-    }
-    if (!user) {
-      console.log('Rendering user not found'); // Debug log
-      return <div className="not-found">User not found</div>;
-    }
+    if (loading) return <BookLoader />;
+    if (error) return <div className="error-message">{error}</div>;
+    if (!user) return <div className="not-found">User not found</div>;
 
     if (isEditing) {
-      console.log('Rendering UserEditForm'); // Debug log
       return (
         <UserEditForm
           show={true}
-          onHide={() => {
-            console.log('Cancel edit clicked'); // Debug log
-            setIsEditing(false);
-          }}
+          onHide={() => setIsEditing(false)}
           user={user}
-          onSubmit={handleUpdateUser}
+          onSubmit={handleRequestSave}     // calls parent, which confirms & saves
+          submitting={saving}               // show spinner in button while saving
         />
       );
     }
 
     switch (activeTab) {
       case 'profile':
-        console.log('Rendering UserProfile'); // Debug log
-        return <UserProfile user={user} onEditSubmit={handleUpdateUser} />;
+        return <UserProfile user={user} onEdit={handleStartEdit} />;
       case 'bookings':
-        console.log('Rendering UserBookings with userId:', user._id); // Debug log
-        if (!user._id) {
-          console.log('No user._id, rendering fallback'); // Debug log
-          return <div className="error-message">User ID not found. Please try again.</div>;
-        }
         return <UserBookings userId={user._id} />;
-      case 'stats':
-        console.log('Rendering Stats placeholder'); // Debug log
-        return <div className="stats-placeholder">Stats coming soon...</div>;
       default:
-        console.log('Rendering default UserProfile'); // Debug log
-        return <UserProfile user={user} onEditSubmit={handleUpdateUser} />;
+        return <UserProfile user={user} onEdit={handleStartEdit} />;
     }
   };
 
   return (
     <div>
-      <Navbar />
+      <Navbar onLogout={handleLogout} />
       <div className="user-details-container">
         <div className="user-details-header">
           <h1>User Details</h1>
@@ -148,29 +200,31 @@ const UserDetails = () => {
             <div className="user-details-navigation">
               <button
                 className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
-                onClick={() => handleTabClick('profile')}
+                onClick={() => setActiveTab('profile')}
               >
                 Profile
               </button>
               <button
                 className={`tab-button ${activeTab === 'bookings' ? 'active' : ''}`}
-                onClick={() => handleTabClick('bookings')}
+                onClick={() => setActiveTab('bookings')}
               >
                 Bookings
-              </button>
-              <button
-                className={`tab-button ${activeTab === 'stats' ? 'active' : ''}`}
-                onClick={() => handleTabClick('stats')}
-              >
-                Stats
               </button>
             </div>
           )}
         </div>
-        <div className="user-details-content">
-          {renderContent()}
-        </div>
+        <div className="user-details-content">{renderContent()}</div>
       </div>
+
+      <ConfirmDialog
+        show={confirmOpen}
+        onHide={closeConfirm}
+        onConfirm={() => {
+          if (confirmAction) confirmAction();
+        }}
+        title={confirmTitle}
+        message={confirmMessage}
+      />
     </div>
   );
 };

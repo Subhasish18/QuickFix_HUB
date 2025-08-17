@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { Card, Button } from 'react-bootstrap';
-import UserEditForm from '../UserEditForm/UserEditForm';
 import Map from '../Map';
+import ConfirmDialog from '../../../components/shared/ConfirmDialog';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const UserProfile = ({ user, onEditSubmit }) => {
-  const [showEditModal, setShowEditModal] = useState(false);
+const UserProfile = ({ user, onEdit }) => {
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const getInitials = (name) => {
     if (!name) return 'U';
     return name
       .split(' ')
-      .map(word => word.charAt(0).toUpperCase())
+      .map((word) => word.charAt(0).toUpperCase())
       .join('')
       .slice(0, 2);
   };
@@ -34,7 +34,7 @@ const UserProfile = ({ user, onEditSubmit }) => {
           <Button
             variant="outline-primary"
             size="sm"
-            onClick={() => setShowEditModal(true)}
+            onClick={() => setShowConfirmDialog(true)}
           >
             <i className="bi bi-pencil"></i> Edit
           </Button>
@@ -84,7 +84,6 @@ const UserProfile = ({ user, onEditSubmit }) => {
 
           {user.city && user.state && (
             <div className="mt-4">
-              {/* Responsive map container */}
               <div style={{ width: '100%', aspectRatio: '16/9', minHeight: '200px' }}>
                 <Map city={user.city} state={user.state} />
               </div>
@@ -93,14 +92,20 @@ const UserProfile = ({ user, onEditSubmit }) => {
         </Card.Body>
       </Card>
 
-      <UserEditForm
-        show={showEditModal}
-        onHide={() => setShowEditModal(false)}
-        user={user}
-        onSubmit={(updatedUser) => {
-          setShowEditModal(false);
-          if (onEditSubmit) onEditSubmit(updatedUser);
+      <ConfirmDialog
+        show={showConfirmDialog}
+        onHide={() => setShowConfirmDialog(false)}
+        onConfirm={() => {
+          // First close confirm dialog
+          setShowConfirmDialog(false);
+
+          // Then trigger edit modal AFTER confirm dialog finishes closing
+          setTimeout(() => {
+            if (onEdit) onEdit();
+          }, 200);
         }}
+        title="Confirm Edit"
+        message="Are you sure you want to edit this profile?"
       />
     </>
   );

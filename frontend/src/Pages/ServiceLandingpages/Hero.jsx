@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../UserLandingPage/Navbar';
-import UpcomingJobsCard from './UpcomingJobs';
 import StatsCard from './StatsCard';
 import RatingsCard from './RatingsCard';
 import ProviderProfileCard from './ProviderProfileCard';
@@ -18,7 +17,6 @@ const Hero = () => {
     { key: 'profile', label: 'Profile & Ratings', icon: 'bi-person' },
     { key: 'stats', label: 'Stats', icon: 'bi-bar-chart' },
     { key: 'jobRequests', label: 'Job Requests', icon: 'bi-inbox' },
-    { key: 'upcomingJobs', label: 'Upcoming Jobs', icon: 'bi-calendar-event' },
     { key: 'completedJobs', label: 'Completed Jobs', icon: 'bi-check-circle' },
   ];
 
@@ -35,8 +33,6 @@ const Hero = () => {
         return <StatsCard />;
       case 'jobRequests':
         return <JobRequestsCard />;
-      case 'upcomingJobs':
-        return <UpcomingJobsCard />;
       case 'completedJobs':
         return <CompletedJobsCard />;
       default:

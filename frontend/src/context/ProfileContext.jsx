@@ -1,7 +1,7 @@
-
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { toast } from 'react-toastify';
 
 const ProfileContext = createContext();
 
@@ -27,9 +27,12 @@ export const ProfileProvider = ({ children }) => {
       });
       setProvider(res.data);
       setError('');
+      toast.success("Profile loaded successfully ✅", { toastId: "profile-loaded" });
     } catch (err) {
       console.error('Error fetching provider profile:', err);
       setError('Failed to load profile data.');
+      // toast.error("Failed to load profile ❌", { toastId: "profile-failed" });
+      console.log(err);
     } finally {
       setLoading(false);
     }
@@ -43,6 +46,7 @@ export const ProfileProvider = ({ children }) => {
       } else {
         setProvider(null);
         setLoading(false);
+        toast.info("Logged out, successfully ℹ️", { toastId: "profile-logged-out" });
       }
     });
 
@@ -51,6 +55,7 @@ export const ProfileProvider = ({ children }) => {
 
   const updateProfile = (newProfileData) => {
     setProvider(newProfileData);
+    // toast.success("Profile updated successfully ✍️", { toastId: "profile-updated" });
   };
 
   const value = {

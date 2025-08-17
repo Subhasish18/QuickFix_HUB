@@ -1,23 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
 import Slider from "react-slick";
 import './HeroSection.css';
 import "slick-carousel/slick/slick.css"; 
-// import "slick-carousel/slick/slick-theme.css";
+import axios from 'axios';
 
 const HeroSection = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+
+    try {
+      const response = await axios.get(`http://localhost:5000/api/search?q=${searchQuery}`);
+      navigate('/search', { state: { results: response.data, query: searchQuery } });
+    } catch (error) {
+      console.error('Error searching for providers:', error);
+    }
+  };
+
   const sliderSettings = {
     dots: true,
-  infinite: true,
-  autoplay: true,
-  autoplaySpeed: 3000,
-  slidesToShow: 1,
-  slidesToScroll: 1,
-  arrows: false,
-  dotsClass: "custom-dots",
-  customPaging: () => (
-    <button className="custom-dot"></button>
-  )
+    infinite: true,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    arrows: false,
+    dotsClass: "custom-dots",
+    customPaging: () => (
+      <button className="custom-dot"></button>
+    )
   };
 
   const serviceImages = [
@@ -43,19 +58,14 @@ const HeroSection = () => {
           <FaSearch className="search-icon" />
           <input
             type="text"
-            placeholder="What service do you need?"
+            placeholder="What service do you need? (Plumbing, Electrical, Lawn Care, etc.)"
             className="search-input"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
           />
-          <button className="search-button">Search</button>
+          <button className="search-button" onClick={handleSearch}>Search</button>
         </div>
-
-        <p className="popular-text">
-          Popular Services:
-          <span className="tag">Cleaning</span>
-          <span className="tag">Plumbing</span>
-          <span className="tag">Electrical</span>
-          <span className="tag">Lawn Care</span>
-        </p>
 
         {/* Slider Section */}
         <div className="hero-slider">

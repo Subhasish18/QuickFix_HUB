@@ -1,6 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import React from 'react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const EditProviderModal = ({
   showEditModal,
@@ -12,9 +14,28 @@ const EditProviderModal = ({
   loading,
   states,
   cities,
-  stateError, // <-- pass from parent if you want
-  cityError,  // <-- pass from parent if you want
 }) => {
+  
+  // wrapper around handleUpdate to inject toast notifications
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await handleUpdate(e);
+
+      // toast.success("Profile updated successfully! 🎉", {
+      //   position: "top-right",
+      //   autoClose: 3000,
+      // });
+      setShowEditModal(false);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update profile. Please try again.", {
+        position: "top-right",
+        autoClose: 4000,
+      });
+    }
+  };
+
   return (
     <AnimatePresence>
       {showEditModal && (
@@ -40,24 +61,22 @@ const EditProviderModal = ({
                 onClick={() => setShowEditModal(false)}
                 whileHover={{ scale: 1.2 }}
                 whileTap={{ scale: 0.9 }}
+                aria-label="Close"
               >
                 <i className="bi bi-x-lg"></i>
               </motion.button>
             </div>
-            <form onSubmit={handleUpdate} className="flex flex-col gap-4">
+            
+            {/* form with toast-enhanced submission */}
+            <form onSubmit={onSubmit} className="flex flex-col gap-4">
               {[
                 { label: 'Name', name: 'name', type: 'text', required: true },
                 { label: 'Email', name: 'email', type: 'email', required: true },
                 { label: 'Phone Number', name: 'phoneNumber', type: 'tel' },
-{ label: 'Profile Image URL', name: 'profileImage', type: 'url', placeholder: 'Enter image URL (e.g., https://example.com/image.jpg)' },
+                { label: 'Profile Image URL', name: 'profileImage', type: 'url', placeholder: 'Enter image URL (e.g., https://example.com/image.jpg)' },
                 { label: 'Description', name: 'description', type: 'textarea' },
                 { label: 'Pricing Model (fixed)', name: 'pricingModel', type: 'text' },
-                {
-                  label: 'Availability (e.g., mon: 9:00-17:00; tue: 10:00-18:00)',
-                  name: 'availability',
-                  type: 'text',
-                  placeholder: 'mon: 9:00-17:00; tue: 10:00-18:00',
-                },
+                { label: 'Availability (e.g., mon: 9:00-17:00; tue: 10:00-18:00)', name: 'availability', type: 'text', placeholder: 'mon: 9:00-17:00; tue: 10:00-18:00' },
                 { label: 'Service Types (comma-separated)', name: 'serviceTypes', type: 'text' },
                 { label: 'State', name: 'state', type: 'select', options: states, optionKey: 'iso2', optionLabel: 'name' },
                 { label: 'City', name: 'city', type: 'select', options: cities, optionKey: 'id', optionLabel: 'name' },
@@ -69,9 +88,12 @@ const EditProviderModal = ({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: index * 0.05 }}
                 >
-                  <label className="text-xs sm:text-sm font-medium text-gray-600">{field.label}</label>
+                  <label htmlFor={field.name} className="text-xs sm:text-sm font-medium text-gray-600">
+                    {field.label}
+                  </label>
                   {field.type === 'textarea' ? (
                     <textarea
+                      id={field.name}
                       name={field.name}
                       value={formData[field.name]}
                       onChange={handleInputChange}
@@ -79,33 +101,26 @@ const EditProviderModal = ({
                       required={field.required}
                     />
                   ) : field.type === 'select' ? (
-                    <>
-                      <select
-                        name={field.name}
-                        value={formData[field.name]}
-                        onChange={handleInputChange}
-                        className="mt-1 p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base"
-                        required={field.required}
-                        disabled={field.name === 'city' && !formData.state}
-                      >
-                        <option value="">Select {field.label}</option>
-                        {field.options.map((option) => (
-                          <option key={option[field.optionKey]} value={option[field.optionLabel]}>
-                            {option[field.optionLabel]}
-                          </option>
-                        ))}
-                      </select>
-                      {/* Error message for states/cities */}
-                      {field.name === 'state' && stateError && (
-                        <span className="text-xs text-red-600 mt-1">{stateError}</span>
-                      )}
-                      {field.name === 'city' && cityError && (
-                        <span className="text-xs text-red-600 mt-1">{cityError}</span>
-                      )}
-                    </>
+                    <select
+                      id={field.name}
+                      name={field.name}
+                      value={formData[field.name]}
+                      onChange={handleInputChange}
+                      className="mt-1 p-2 sm:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base"
+                      required={field.required}
+                      disabled={field.name === 'city' && !formData.state}
+                    >
+                      <option value="">Select {field.label}</option>
+                      {field.options.map((option) => (
+                        <option key={option[field.optionKey]} value={option[field.optionLabel]}>
+                          {option[field.optionLabel]}
+                        </option>
+                      ))}
+                    </select>
                   ) : (
                     <>
                       <input
+                        id={field.name}
                         type={field.type}
                         name={field.name}
                         value={formData[field.name]}
@@ -122,13 +137,12 @@ const EditProviderModal = ({
                             alt="Profile preview"
                             className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
                             onError={(e) => {
-                              e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'block';
+                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.nextSibling.style.display = 'flex';
                             }}
                           />
                           <div 
-                            className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs" 
-                            style={{display: 'none'}}
+                            className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs hidden"
                           >
                             Invalid URL
                           </div>
@@ -138,6 +152,8 @@ const EditProviderModal = ({
                   )}
                 </motion.div>
               ))}
+              
+              {/* Submit Button */}
               <motion.button
                 type="submit"
                 className="mt-4 px-4 py-2 sm:px-6 sm:py-2 bg-indigo-600 text-white rounded-lg flex items-center justify-center gap-2"
@@ -145,7 +161,11 @@ const EditProviderModal = ({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <i className="bi bi-save"></i>
+                {loading ? (
+                  <i className="bi bi-arrow-repeat animate-spin"></i>
+                ) : (
+                  <i className="bi bi-save"></i>
+                )}
                 {loading ? 'Saving...' : 'Save Changes'}
               </motion.button>
             </form>

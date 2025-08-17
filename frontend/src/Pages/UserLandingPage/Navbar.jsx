@@ -6,14 +6,27 @@ import { HashLink } from 'react-router-hash-link';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+
 const Navbar = () => {
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
 
   // This state will hold data for any logged-in user (Firebase user, provider, or admin)
   const [userData, setUserData] = useState(null);
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+
+    try {
+      const response = await axios.get(`http://localhost:5000/api/search?q=${searchQuery}`);
+      navigate('/search', { state: { results: response.data, query: searchQuery } });
+    } catch (error) {
+      console.error('Error searching for providers:', error);
+    }
+  };
 
   // Generate initials from display name or email
   const getInitials = () => {
@@ -137,11 +150,17 @@ const Navbar = () => {
       {/* Search Bar */}
       <div className="nav-search">
         <FiSearch className="search-icon" />
-        <input type="text" placeholder="Search services..." />
+        <input
+          type="text"
+          placeholder="Provider Name, State, City, service Type..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+        />
       </div>
-
       {/* Links / Auth Section */}
       <div className="nav-links">
+        
         <HashLink smooth to="/#services">Browse Services</HashLink>
         <HashLink smooth to="/#providers">Service Providers</HashLink>
 
@@ -180,8 +199,6 @@ const Navbar = () => {
                 }}>
                   View Profile
                 </div>
-
-                <div className="dropdown-link">Settings</div>
                 <div className="dropdown-divider" />
                 <div className="dropdown-link" onClick={handleLogout}>
                   Log out

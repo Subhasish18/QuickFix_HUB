@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaStar, FaBuilding, FaMapMarkerAlt, FaChevronLeft, FaChevronRight, FaPlay, FaPause } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './FeaturedServices.css';
 
@@ -17,6 +18,7 @@ const hardcodedServices = [
   },
 ];
 const FeaturedServices = () => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const [dynamicProviders, setDynamicProviders] = useState([]);
@@ -26,10 +28,6 @@ const FeaturedServices = () => {
   const autoScrollInterval = useRef(null);
   const SCROLL_DELAY = 5000;
   
-
-  // Cards are display-only - no navigation functionality
-  
-
 
   useEffect(() => {
     const fetchProviders = async () => {
@@ -202,37 +200,46 @@ const FeaturedServices = () => {
         </button>
       </div>
       <div className="services-grid">
-        {currentServices.map((service, idx) => (
-          <div 
-            key={startIndex + idx} 
-            className="service-card display-only"
-          >
-            <div className="service-image-container">
-              <img src={service.image} alt={service.title} className="service-image" />
-              <span className="service-category-badge">{service.category}</span>
-            </div>
-            <div className="service-content">
-              <h3 className="service-title">{service.title}</h3>
-              <p className="service-company">
-                <FaBuilding className="service-company-icon" />
-                {service.company}
-              </p>
-              <p className="service-location">
-                <FaMapMarkerAlt className="service-location-icon" />
-                {service.city && service.state
-                  ? `${service.city}, ${service.state}`
-                  : 'Location not specified'}
-              </p>
-              <div className="service-divider"></div>
-              <div className="service-footer">
-                <span className="service-rating">
-                  <FaStar className="star-icon" /> {service.rating}
-                </span>
-                <span className="service-price">{service.price}</span>
+        {currentServices.map((service) => {
+          const cardContent = (
+            <>
+              <div className="service-image-container">
+                <img src={service.image} alt={service.title} className="service-image" />
+                <span className="service-category-badge">{service.category}</span>
               </div>
+              <div className="service-content">
+                <h3 className="service-title">{service.title}</h3>
+                <p className="service-company">
+                  <FaBuilding className="service-company-icon" />
+                  {service.company}
+                </p>
+                <p className="service-location">
+                  <FaMapMarkerAlt className="service-location-icon" />
+                  {service.city && service.state
+                    ? `${service.city}, ${service.state}`
+                    : 'Location not specified'}
+                </p>
+                <div className="service-divider"></div>
+                <div className="service-footer">
+                  <span className="service-rating">
+                    <FaStar className="star-icon" /> {service.rating}
+                  </span>
+                  <span className="service-price">{service.price}</span>
+                </div>
+              </div>
+            </>
+          );
+
+          return service.isRealProvider ? (
+            <div key={service.id} onClick={() => navigate(`/serviceDetails/${service.category}`)} className="service-card" style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}>
+              {cardContent}
             </div>
-          </div>
-        ))}
+          ) : (
+            <div key={service.id} className="service-card display-only" >
+              {cardContent}
+            </div>
+          );
+        })}
       </div>
 
       <div className="pagination-container">

@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import './ServicesSection.css';
 import { useNavigate } from 'react-router-dom';
