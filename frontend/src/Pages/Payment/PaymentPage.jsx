@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"; 
-import { Check, CreditCard, Shield, Clock, DollarSign } from "lucide-react"; 
+import { Check, CreditCard, Shield, Clock, DollarSign, IndianRupee } from "lucide-react"; 
 import Navbar from "../UserLandingPage/Navbar";
 import razorpayLogo from "../../assets/razor.svg";
 import Footer from "../UserLandingPage/Footer";
@@ -15,7 +15,7 @@ const PaymentPage = () => {
     setIsProcessing(true);
     setTimeout(() => {
       setIsProcessing(false);
-      console.log(`Payment of ${amount} processed.`);
+      console.log(`Payment of ₹{amount} processed.`);
       alert("Payment successful!");
       navigate("/dashboard"); 
     }, 2000);
@@ -53,7 +53,7 @@ return (
               </label>
               <div className="relative">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <DollarSign className="h-5 w-5 text-slate-400" aria-hidden="true" />
+                  <IndianRupee className="h-5 w-5 text-slate-400" aria-hidden="true" />
                 </div>
                 <input
                   type="number"
