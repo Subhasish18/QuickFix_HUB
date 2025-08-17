@@ -56,11 +56,11 @@ const PaymentPage = () => {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Update booking status
-      await axios.put(`http://localhost:5000/api/bookings/${bookingId}/status`, {
+      await axios.put(http://localhost:5000/api/bookings/${bookingId}/status, {
         paymentStatus: "paid",
       });
 
-      console.log(`Payment of ${amount} processed for booking ${bookingId}.`);
+      console.log(Payment of ${amount} processed for booking ${bookingId}.);
       toast.success("✅ Payment successful. Please wait!");
       toast.info("Redirecting to Booking Details...");
       setTimeout(() => navigate("/userDetails"), 2000);
