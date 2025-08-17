@@ -1,21 +1,21 @@
 import { useState, useEffect } from 'react';
-import { Card, Badge, ProgressBar } from 'react-bootstrap';
+import { Card, Badge } from 'react-bootstrap';
 import { motion } from 'framer-motion';
 import { getAuth } from 'firebase/auth';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import EditProviderModal from '../../Pages/ServiceLandingpages/EditProviderModal';
 import Map from '../../Pages/Components/Map';
 import { useProfile } from '../../context/ProfileContext';
+import ConfirmDialog from './ConfirmDialog';
+import EditProviderModal from '../../Pages/ServiceLandingpages/EditProviderModal';
 
-const UnifiedProfileCard = ({ 
-  serviceData, 
-  mode = 'view', 
-  onUpdate 
-}) => {
+const UnifiedProfileCard = ({ serviceData, mode = 'view', onUpdate }) => {
   const { provider, loading: profileLoading, error: profileError, updateProfile } = useProfile();
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -28,13 +28,9 @@ const UnifiedProfileCard = ({
     city: '',
     state: '',
   });
-
-  // Location dropdown states
+  const [loading, setLoading] = useState(false);
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
-  const [stateError, setStateError] = useState('');
-  const [cityError, setCityError] = useState('');
-  const [loading, setLoading] = useState(false);
 
   const CSC_API_KEY = import.meta.env.VITE_CSC_API_KEY;
 
@@ -59,36 +55,34 @@ const UnifiedProfileCard = ({
     }
   }, [provider]);
 
-  // Fetch states on mount
   useEffect(() => {
     const fetchStates = async () => {
       try {
-        const response = await axios.get('https://api.countrystatecity.in/v1/countries/IN/states', {
-          headers: { 'X-CSCAPI-KEY': CSC_API_KEY },
-        });
+        const response = await axios.get(
+          'https://api.countrystatecity.in/v1/countries/IN/states',
+          { headers: { 'X-CSCAPI-KEY': CSC_API_KEY } }
+        );
         setStates(response.data || []);
       } catch (err) {
         console.error('❌ Error fetching states:', err);
-        setStateError('Could not load states.');
+        toast.error('Unable to fetch states. Please try again.');
       }
     };
     fetchStates();
-  }, []);
+  }, [CSC_API_KEY]);
 
-  // Fetch cities when state changes
   useEffect(() => {
     if (!formData.state) {
       setCities([]);
       return;
     }
-    const selectedState = states.find(s => s.name === formData.state);
+    const selectedState = states.find((s) => s.name === formData.state);
     if (!selectedState) {
       setCities([]);
       return;
     }
     const fetchCities = async () => {
       try {
-        setCityError('');
         const response = await axios.get(
           `https://api.countrystatecity.in/v1/countries/IN/states/${selectedState.iso2}/cities`,
           { headers: { 'X-CSCAPI-KEY': CSC_API_KEY } }
@@ -96,13 +90,12 @@ const UnifiedProfileCard = ({
         setCities(response.data || []);
       } catch (err) {
         console.error('❌ Error fetching cities:', err);
-        setCityError('Could not load cities.');
+        toast.error('Unable to fetch cities. Please try again.');
       }
     };
     fetchCities();
-  }, [formData.state, states]);
+  }, [formData.state, states, CSC_API_KEY]);
 
-  // Input handler: reset city if state changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (name === 'state') {
@@ -112,16 +105,20 @@ const UnifiedProfileCard = ({
     }
   };
 
-  // Update handler
-  const handleUpdate = async (e) => {
+  const handleUpdate = (e) => {
     e.preventDefault();
+    setShowConfirm(true);
+  };
+
+  const confirmUpdate = async () => {
     setLoading(true);
     try {
       const auth = getAuth();
       const user = auth.currentUser;
       if (!user) {
-        // setError('Please log in to update profile.');
         setLoading(false);
+        toast.error('Please log in to update profile.');
+        setShowConfirm(false);
         return;
       }
 
@@ -149,23 +146,32 @@ const UnifiedProfileCard = ({
       };
 
       const token = await user.getIdToken();
-      const res = await axios.put('http://localhost:5000/api/provider-details/edit', updateData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.put(
+        'http://localhost:5000/api/provider-details/edit',
+        updateData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       updateProfile(res.data.provider);
       setShowEditModal(false);
-      // setError('');
+      setShowConfirm(false);
+      toast.success('Profile updated successfully!');
       if (onUpdate) onUpdate(res.data.provider);
     } catch (err) {
       console.error('Error updating provider:', err);
-      // setError(err.response?.data?.message || 'Failed to update profile.');
+      toast.error(err.response?.data?.message || 'Failed to update profile.');
     } finally {
       setLoading(false);
+      setShowConfirm(false);
     }
   };
 
-  // Default data for fallback
+  useEffect(() => {
+    if (profileError) {
+      toast.error(profileError);
+    }
+  }, [profileError]);
+
   const defaultData = {
     name: 'Service Provider',
     email: 'provider@example.com',
@@ -180,16 +186,10 @@ const UnifiedProfileCard = ({
     rating: 4.2,
   };
 
-  // Use fetched provider data or fallback
   const providerData = provider || serviceData || defaultData;
-  console.log('providerData', providerData);
 
-  // Safely get the primary service type to prevent runtime errors
-  const primaryService = (providerData.serviceTypes && providerData.serviceTypes.length > 0)
-    ? providerData.serviceTypes[0]
-    : 'General Services';
+  const primaryService = providerData.serviceTypes?.length > 0 ? providerData.serviceTypes[0] : 'General Services';
 
-  // Render star ratings
   const renderStars = (rating) => {
     return [1, 2, 3, 4, 5].map((star) => (
       <motion.svg
@@ -206,17 +206,17 @@ const UnifiedProfileCard = ({
     ));
   };
 
-  // Generate initials from provider name
   const getInitials = (name) => {
     return name
-      .split(' ')
-      .map((word) => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+      ? name
+          .split(' ')
+          .map((word) => word.charAt(0))
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
+      : 'SP';
   };
 
-  // Map skills to categories
   const getSkillsForCategory = (category) => {
     const skillsMap = {
       Cleaning: ['Deep Cleaning', 'Sanitization', 'Carpet Care', 'Window Cleaning'],
@@ -230,13 +230,12 @@ const UnifiedProfileCard = ({
     return skillsMap[category] || skillsMap['General'];
   };
 
-  // Generate consistent stats
   const generateStats = (providerName) => {
-    const name = providerName || ''; // Ensure providerName is a string to prevent errors
+    const name = providerName || '';
     let seed = 0;
     for (let i = 0; i < name.length; i++) {
       seed = ((seed << 5) - seed) + name.charCodeAt(i);
-      seed |= 0; // Convert to 32bit integer, more conventional
+      seed |= 0;
     }
 
     const seededRandom = (min, max) => {
@@ -260,9 +259,7 @@ const UnifiedProfileCard = ({
   };
 
   const stats = generateStats(providerData.name);
-  console.log('stats', stats);
 
-  // Format availability
   const formatAvailability = (availability) => {
     if (!availability || Object.keys(availability).length === 0) return 'Not specified';
     return Object.entries(availability)
@@ -273,10 +270,9 @@ const UnifiedProfileCard = ({
   if (profileLoading) {
     return (
       <motion.div
-        className={mode === 'edit' ? 
-          "bg-white/80 backdrop-blur-sm rounded-xl shadow-xl p-4 sm:p-6 text-center text-gray-600" :
-          "card shadow-sm p-4 text-center text-muted"
-        }
+        className={mode === 'edit'
+          ? 'bg-white/80 backdrop-blur-sm rounded-xl shadow-xl p-4 sm:p-6 text-center text-gray-600'
+          : 'card shadow-sm p-4 text-center text-muted'}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -320,10 +316,8 @@ const UnifiedProfileCard = ({
               <div>
                 <h5 className="mb-1">{providerData.name}</h5>
                 <p className="text-muted mb-1" style={{ fontSize: '0.875rem' }}>{providerData.description}</p>
-                
               </div>
             </div>
-
             <div className="row g-3">
               <div className="col-6">
                 <div className="bg-light p-3 rounded">
@@ -338,7 +332,6 @@ const UnifiedProfileCard = ({
                 </div>
               </div>
             </div>
-
             <div className="d-flex flex-column gap-4">
               <div>
                 <div className="d-flex justify-content-between align-items-center">
@@ -346,13 +339,9 @@ const UnifiedProfileCard = ({
                   <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{stats.profileCompletion}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                  <div
-                    className="bg-indigo-600 h-2 rounded-full"
-                    style={{ width: `${stats.profileCompletion}%` }}
-                  />
+                  <div className="bg-indigo-600 h-2 rounded-full" style={{ width: `${stats.profileCompletion}%` }} />
                 </div>
               </div>
-              
               <div className="row g-2 mb-3">
                 <div className="col-6">
                   <div className="text-center p-2 border rounded">
@@ -367,20 +356,15 @@ const UnifiedProfileCard = ({
                   </div>
                 </div>
               </div>
-              
               <div className="mb-3">
                 <div className="d-flex justify-content-between align-items-center mb-1">
                   <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>Repeat Customers</span>
                   <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{stats.repeatCustomers}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <div
-                    className="bg-green-500 h-1.5 rounded-full"
-                    style={{ width: `${stats.repeatCustomers}%` }}
-                  />
+                  <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${stats.repeatCustomers}%` }} />
                 </div>
               </div>
-              
               <div>
                 <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>Skills</span>
                 <div className="d-flex flex-wrap gap-2 mt-2">
@@ -448,11 +432,9 @@ const UnifiedProfileCard = ({
                 <div className="text-center sm:text-left">
                   <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">{providerData.name}</h3>
                   <p className="text-sm sm:text-base italic text-white/90">{providerData.description}</p>
-                  
                 </div>
               </div>
             </motion.div>
-
             <motion.div
               className="bg-white p-4 rounded-lg shadow-sm"
               initial={{ opacity: 0, y: 20 }}
@@ -463,9 +445,13 @@ const UnifiedProfileCard = ({
                 {[
                   { icon: 'bi-envelope', label: 'Email', value: providerData.email },
                   { icon: 'bi-telephone', label: 'Phone', value: providerData.phoneNumber || 'Not specified' },
-                  { icon: 'bi-geo-alt', label: 'Location', value: providerData.city && providerData.state
-                    ? `${providerData.city}, ${providerData.state}`
-                    : 'Location not specified' },
+                  {
+                    icon: 'bi-geo-alt',
+                    label: 'Location',
+                    value: providerData.city && providerData.state
+                      ? `${providerData.city}, ${providerData.state}`
+                      : 'Location not specified',
+                  },
                   { icon: 'bi-currency-rupee', label: 'Pricing Model', value: providerData.pricingModel || 'Not specified' },
                   { icon: 'bi-clock', label: 'Availability', value: formatAvailability(providerData.availability) },
                 ].map((item, index) => (
@@ -484,7 +470,6 @@ const UnifiedProfileCard = ({
                 ))}
               </div>
             </motion.div>
-            {/* Map Section */}
             <motion.div
               className="bg-white p-4 rounded-lg shadow-sm"
               initial={{ opacity: 0, y: 20 }}
@@ -494,7 +479,6 @@ const UnifiedProfileCard = ({
               <h3 className="text-lg font-bold text-indigo-900 mb-4">Provider Location</h3>
               <Map city={providerData.city} state={providerData.state} />
             </motion.div>
-
             <motion.div
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
               initial={{ opacity: 0, y: 20 }}
@@ -520,7 +504,6 @@ const UnifiedProfileCard = ({
                 <span className="text-base sm:text-lg font-semibold text-indigo-900">{stats.jobsCompleted}</span>
               </motion.div>
             </motion.div>
-
             <motion.div
               className="flex flex-col gap-4 sm:gap-6"
               initial={{ opacity: 0, y: 20 }}
@@ -533,13 +516,9 @@ const UnifiedProfileCard = ({
                   <span>{stats.profileCompletion}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                  <div
-                    className="bg-indigo-600 h-2 rounded-full"
-                    style={{ width: `${stats.profileCompletion}%` }}
-                  />
+                  <div className="bg-indigo-600 h-2 rounded-full" style={{ width: `${stats.profileCompletion}%` }} />
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <motion.div
                   className="text-center p-3 border border-indigo-100 rounded-lg"
@@ -558,20 +537,15 @@ const UnifiedProfileCard = ({
                   <div className="text-xs sm:text-sm text-gray-600">Success Rate</div>
                 </motion.div>
               </div>
-
               <div>
                 <div className="flex justify-between items-center text-xs sm:text-sm font-medium text-gray-600 mb-1">
                   <span>Repeat Customers</span>
                   <span>{stats.repeatCustomers}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <div
-                    className="bg-green-500 h-1.5 rounded-full"
-                    style={{ width: `${stats.repeatCustomers}%` }}
-                  />
+                  <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${stats.repeatCustomers}%` }} />
                 </div>
               </div>
-
               <div>
                 <span className="block text-xs sm:text-sm font-medium text-gray-600">Skills</span>
                 <div className="flex flex-wrap gap-2 mt-2">
@@ -582,26 +556,22 @@ const UnifiedProfileCard = ({
                   >
                     {primaryService}
                   </motion.span>
-                  {getSkillsForCategory(primaryService)
-                    .slice(0, 4)
-                    .map((skill, index) => (
-                      <motion.span
-                        key={index}
-                        className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs sm:text-sm"
-                        whileHover={{ scale: 1.1 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        {skill}
-                      </motion.span>
-                    ))}
+                  {getSkillsForCategory(primaryService).slice(0, 4).map((skill, index) => (
+                    <motion.span
+                      key={index}
+                      className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs sm:text-sm"
+                      whileHover={{ scale: 1.1 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {skill}
+                    </motion.span>
+                  ))}
                 </div>
               </div>
             </motion.div>
           </div>
         </div>
       </motion.div>
-
-      {/* Pass location data and error handlers to the modal */}
       <EditProviderModal
         showEditModal={showEditModal}
         setShowEditModal={setShowEditModal}
@@ -612,8 +582,13 @@ const UnifiedProfileCard = ({
         loading={loading}
         states={states}
         cities={cities}
-        stateError={stateError}
-        cityError={cityError}
+      />
+      <ConfirmDialog
+        show={showConfirm}
+        onHide={() => setShowConfirm(false)}
+        onConfirm={confirmUpdate}
+        title="Confirm Update"
+        message="Are you sure you want to update your profile with these changes?"
       />
     </>
   );

@@ -6,6 +6,8 @@ import auth from "../../utils/Firebase";
 import Footer from './Footer';
 import Navbar from '../UserLandingPage/Navbar';
 import { FaUser, FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const SignupProvider = () => {
   const [formData, setFormData] = useState({
@@ -44,21 +46,22 @@ const SignupProvider = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const firebaseUser = userCredential.user;
       await saveProviderToBackend(firebaseUser);
-      alert('Provider signed up successfully!');
+      toast.success("✅ Provider signed up successfully!");
       navigate('/additional-details/provider');
     } catch (err) {
-      alert(err.message);
+      toast.error(`❌ Signup failed: ${err.message}`);
     }
   };
+
   const handleGoogleSignup = async () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
       await saveProviderToBackend(result.user);
-      alert('Provider signed up successfully with Google!');
+      toast.success("✅ Provider signed up successfully with Google!");
       navigate('/additional-details/provider');
     } catch (err) {
-      alert(err.message);
+      toast.error(`❌ Google signup failed: ${err.message}`);
     }
   };
 
