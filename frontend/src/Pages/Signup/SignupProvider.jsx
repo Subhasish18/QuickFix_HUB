@@ -22,14 +22,14 @@ const SignupProvider = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const saveProviderToBackend = async (firebaseUser) => {
-    // Get Firebase ID token for authentication
+  // Accepts firebaseUser, name, email for both email and Google signup
+  const saveProviderToBackend = async (firebaseUser, name, email) => {
     const idToken = await firebaseUser.getIdToken();
     await axios.post(
       "http://localhost:5000/api/provider-details",
       {
-        name: formData.name,
-        email: formData.email,
+        name,
+        email,
         firebaseUid: firebaseUser.uid,
       },
       {
@@ -45,7 +45,7 @@ const SignupProvider = () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const firebaseUser = userCredential.user;
-      await saveProviderToBackend(firebaseUser);
+      await saveProviderToBackend(firebaseUser, formData.name, formData.email);
       toast.success("✅ Provider signed up successfully!");
       navigate('/additional-details/provider');
     } catch (err) {
@@ -57,11 +57,17 @@ const SignupProvider = () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
-      await saveProviderToBackend(result.user);
-      toast.success("✅ Provider signed up successfully with Google!");
+      const googleUser = result.user;
+      // Use displayName and email from Google account
+      await saveProviderToBackend(
+        googleUser,
+        googleUser.displayName || "Google User",
+        googleUser.email
+      );
+      toast.success("🎉 Signed up successfully with Google!");
       navigate('/additional-details/provider');
     } catch (err) {
-      toast.error(`❌ Google signup failed: ${err.message}`);
+      toast.error(`❌ ${err.message}`);
     }
   };
 
