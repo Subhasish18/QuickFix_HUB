@@ -97,7 +97,7 @@ const BookingTable = ({ bookings = [] }) => {
             <Calendar className="h-6 w-6 text-white" />
             <h3 className="text-xl font-bold text-white">Service Bookings</h3>
             <div className="ml-auto bg-white bg-opacity-20 rounded-full px-3 py-1">
-              <span className="text-white text-sm font-medium">
+              <span className="text-black text-sm font-medium">
                 {bookings.length} {bookings.length === 1 ? 'booking' : 'bookings'}
               </span>
             </div>
@@ -442,7 +442,10 @@ const BookingTable = ({ bookings = [] }) => {
                     <div>
                       <div className="text-sm font-medium text-gray-500">Location</div>
                       <div className="font-medium text-gray-900">
-                        {selectedBooking.serviceId?.location || 'Not Available'}
+                        {/* {selectedBooking.serviceId?.location || 'Not Available'} */}
+                        {selectedBooking.serviceId?.city 
+                              ? `${selectedBooking.serviceId?.city}${selectedBooking.serviceId?.state ? ', ' + selectedBooking.serviceId?.state : ''}, India`
+                              : 'Not Available'}
                       </div>
                     </div>
                   </div>

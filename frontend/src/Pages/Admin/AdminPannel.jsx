@@ -224,7 +224,7 @@ const AdminPanel = () => {
   if (loading) {
     return (
       <>
-        {/* <Navbar /> */}
+        <Navbar />
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
           <div className="bg-white rounded-xl shadow-lg p-8 flex items-center space-x-4">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -237,7 +237,7 @@ const AdminPanel = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* <Navbar /> */}
+      <Navbar />
       {toasts.map(toast => (
         <Toast
           key={toast.id}
@@ -246,13 +246,13 @@ const AdminPanel = () => {
           onClose={() => removeToast(toast.id)}
         />
       ))}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-16">
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-2">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg pt-2">
               <Shield className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+            <h1 className="text-3xl font-bold text-gray-900 pt-2">Admin Dashboard</h1>
           </div>
           <p className="text-gray-600">Manage users, providers, and monitor platform activity</p>
         </div>

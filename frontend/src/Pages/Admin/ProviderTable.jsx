@@ -26,7 +26,7 @@ const dashboardStyles = {
   card: "bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md",
   cardHeader: "bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4", // Aligned with BookingTable
   cardTitle: "text-xl font-bold text-white flex items-center space-x-3", // Aligned with BookingTable
-  cardBadge: "bg-white bg-opacity-20 rounded-full px-3 py-1 text-sm font-medium text-white", // Aligned with BookingTable
+  cardBadge: "bg-white bg-opacity-20 rounded-full px-3 py-1 text-sm font-medium text-black", // Aligned with BookingTable
   tableContainer: "overflow-x-auto",
   table: "w-full divide-y divide-gray-200",
   tableHeader: "bg-gray-50 border-b border-gray-200",
@@ -215,7 +215,11 @@ const ProviderTable = ({ providers = [], onView, onRefresh }) => {
                     <td className={dashboardStyles.tableCell}>
                       <div className="flex items-center space-x-2">
                         <MapPin className="h-4 w-4 text-gray-400" />
-                        <span className="text-gray-900">{provider.location || 'Not specified'}</span>
+                          <span className="text-gray-900">
+                            {provider.city
+                              ? `${provider.city}${provider.state ? ', ' + provider.state : ''}, India`
+                              : 'Not specified'}
+                          </span>
                       </div>
                     </td>
                     <td className={dashboardStyles.tableCell}>
@@ -242,9 +246,9 @@ const ProviderTable = ({ providers = [], onView, onRefresh }) => {
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
-                        <button className={dashboardStyles.iconButton} title="More Options">
+                        {/* <button className={dashboardStyles.iconButton} title="More Options">
                           <MoreHorizontal className="h-4 w-4" />
-                        </button>
+                        </button> */}
                       </div>
                     </td>
                   </tr>
@@ -333,7 +337,7 @@ const ProviderTable = ({ providers = [], onView, onRefresh }) => {
                       <div>
                         <span className="text-sm font-medium text-gray-500">Service Type</span>
                         <div className="bg-white px-3 py-2 rounded-lg border mt-1 text-sm">
-                          {selectedProvider.serviceType || 'General Services'}
+                          {selectedProvider.serviceTypes || 'General Services'}
                         </div>
                       </div>
                     </div>
@@ -360,7 +364,7 @@ const ProviderTable = ({ providers = [], onView, onRefresh }) => {
                         <div>
                           <div className="text-sm font-medium text-gray-500">Phone</div>
                           <div className="font-medium text-gray-900">
-                            {selectedProvider.phone || 'Not Available'}
+                            {selectedProvider.phoneNumber || 'Not Available'}
                           </div>
                         </div>
                       </div>
@@ -369,7 +373,9 @@ const ProviderTable = ({ providers = [], onView, onRefresh }) => {
                         <div>
                           <div className="text-sm font-medium text-gray-500">Location</div>
                           <div className="font-medium text-gray-900">
-                            {selectedProvider.location || 'Not Available'}
+                           {selectedProvider.city 
+                              ? `${selectedProvider.city}${selectedProvider.state ? ', ' + selectedProvider.state : ''}, India`
+                              : 'Not Available'}
                           </div>
                         </div>
                       </div>
@@ -390,9 +396,9 @@ const ProviderTable = ({ providers = [], onView, onRefresh }) => {
                     </div>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-gray-500">Experience</span>
+                    <span className="text-sm font-medium text-gray-500">pricingModel ₹/hr</span>
                     <div className="bg-white px-3 py-2 rounded-lg border mt-1 text-sm">
-                      {selectedProvider.experience || 'Not specified'}
+                      {`${selectedProvider.pricingModel}` || 'Not specified'}
                     </div>
                   </div>
                 </div>
@@ -452,7 +458,7 @@ const ProviderTable = ({ providers = [], onView, onRefresh }) => {
       )}
 
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-60">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[100]">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full transform transition-all duration-300">
             <div className="p-6">
               <div className="flex items-center space-x-3 mb-4">
