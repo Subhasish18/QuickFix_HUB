@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
+import Navbar from '../UserLandingPage/Navbar';
 import Footer from '../UserLandingPage/Footer';
 import logo from '../../assets/fix2.png';
 

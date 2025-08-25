@@ -80,14 +80,6 @@ const Footer = () => {
           ))}
         </div>
 
-        <div className="footer-bottom">
-          <p>© {currentYear} QuickFixHUB Direct. All rights reserved.</p>
-          <select className="footer-select">
-            <option>English (US)</option>
-            <option>Spanish</option>
-            <option>French</option>
-          </select>
-        </div>
       </div>
     </footer>
   );

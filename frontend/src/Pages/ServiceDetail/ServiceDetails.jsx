@@ -23,7 +23,8 @@ const ServiceDetails = () => {
       serviceId: service._id,
       title: service.name,
       company: service.name,
-      location: service.location,
+      city: `${service.city}`,
+      state: `${service.state}`,
       price: `₹${service.pricingModel}/hr`,
       rating: service.rating || 4.5,
       category: serviceName,
@@ -110,7 +111,7 @@ const ServiceDetails = () => {
                 </p>
                 <p className="service-location">
                   <FaMapMarkerAlt className="service-location-icon" />
-                  {service.location}
+                  {service.city}, {service.state}
                 </p>
                 <div className="service-divider"></div>
                 <div className="service-footer">

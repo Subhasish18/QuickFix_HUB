@@ -51,8 +51,7 @@ const FeaturedServices = () => {
             id: provider._id, // Add this line
             title: provider.services?.[0]?.title || `${provider.category} Services`,
             company: provider.name || 'Service Provider',
-            city: provider.city || 'Unknown',
-            state: provider.state || 'Unknown',
+            location: provider.location || 'Unknown',
             price: provider.services?.[0]?.price || provider.pricingModel || 'Contact for pricing',
             rating: provider.rating || 4.5,
             category: provider.category || 'General',
@@ -205,7 +204,7 @@ const FeaturedServices = () => {
             <>
               <div className="service-image-container">
                 <img src={service.image} alt={service.title} className="service-image" />
-                <span className="service-category-badge">{service.category}</span>
+                <span className="service-category-badge">{service.serviceTypes}</span>
               </div>
               <div className="service-content">
                 <h3 className="service-title">{service.title}</h3>
@@ -215,9 +214,8 @@ const FeaturedServices = () => {
                 </p>
                 <p className="service-location">
                   <FaMapMarkerAlt className="service-location-icon" />
-                  {service.city && service.state
-                    ? `${service.city}, ${service.state}`
-                    : 'Location not specified'}
+                  {service.location
+                    ||'Location not specified'}
                 </p>
                 <div className="service-divider"></div>
                 <div className="service-footer">

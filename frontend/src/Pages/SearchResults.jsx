@@ -8,6 +8,8 @@ import './SearchResults.css'; // Import the new CSS file
 const SearchResults = () => {
   const location = useLocation();
   const { results, query } = location.state || { results: [], query: '' };
+  console.log('Results:', results);
+
 
   return (
     <>
@@ -30,7 +32,7 @@ const SearchResults = () => {
                   </p>
                   <p className="service-location">
                     <FaMapMarkerAlt className="service-location-icon" />
-                    {provider.location}
+                    {provider.location || 'Location not specified'}
                   </p>
                   <div className="service-divider"></div>
                   <div className="service-footer">
