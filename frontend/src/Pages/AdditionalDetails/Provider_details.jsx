@@ -7,7 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Footer from '../UserLandingPage/Footer';
 import Navbar from '../UserLandingPage/Navbar';
 import Select from 'react-select';
-// import ConfirmDialog from '../../Components/shared/ConfirmDialog';
+import ConfirmDialog from '../../components/shared/ConfirmDialog';
 
 // Add CSS for smooth animations
 const slideDownAnimation = `

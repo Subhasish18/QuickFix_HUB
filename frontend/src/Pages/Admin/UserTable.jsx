@@ -26,7 +26,7 @@ const dashboardStyles = {
   card: "bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md",
   cardHeader: "bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4",
   cardTitle: "text-xl font-bold text-white flex items-center space-x-3",
-  cardBadge: "bg-white bg-opacity-20 rounded-full px-3 py-1 text-sm font-medium text-white",
+  cardBadge: "bg-white bg-opacity-20 rounded-full px-3 py-1 text-sm font-medium text-black",
   tableContainer: "overflow-x-auto",
   table: "w-full divide-y divide-gray-200",
   tableHeader: "bg-gray-50 border-b border-gray-200",
@@ -233,9 +233,9 @@ const UserTable = ({ users = [], onView, onRefresh }) => {
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
-                        <button className={dashboardStyles.iconButton} title="More Options">
+                        {/* <button className={dashboardStyles.iconButton} title="More Options">
                           <MoreHorizontal className="h-4 w-4" />
-                        </button>
+                        </button> */}
                       </div>
                     </td>
                   </tr>
@@ -350,7 +350,7 @@ const UserTable = ({ users = [], onView, onRefresh }) => {
                           <div>
                             <div className="text-sm font-medium text-gray-500">Phone</div>
                             <div className="font-medium text-gray-900">
-                              {selectedUser.phone || 'Not Available'}
+                              {selectedUser.phoneNumber || 'Not Available'}
                             </div>
                           </div>
                         </div>
@@ -413,7 +413,7 @@ const UserTable = ({ users = [], onView, onRefresh }) => {
         )}
 
         {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-60">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[100]">
             <div className="bg-white rounded-xl shadow-2xl max-w-md w-full transform transition-all duration-300">
               <div className="p-6">
                 <div className="flex items-center space-x-3 mb-4">
