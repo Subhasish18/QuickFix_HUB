@@ -7,9 +7,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import Footer from '../UserLandingPage/Footer';
 import Navbar from '../UserLandingPage/Navbar';
 import Select from 'react-select';
-// import ConfirmDialog from '../../Components/shared/ConfirmDialog';
 
-// Add CSS for smooth animations
+
 const slideDownAnimation = `
   @keyframes slideDown {
     from {
@@ -25,9 +24,9 @@ const slideDownAnimation = `
   }
 `;
 
-// Inject CSS
-if (typeof document !== 'undefined') {
+if (typeof document !== 'undefined' && !document.getElementById('slideDownAnimation')) {
   const styleElement = document.createElement('style');
+  styleElement.id = 'slideDownAnimation';
   styleElement.textContent = slideDownAnimation;
   document.head.appendChild(styleElement);
 }
@@ -145,6 +144,19 @@ const ProviderDetails = () => {
     fetchCities();
   }, [formData.state, states]);
 
+  // Autofill name/email from Firebase user if available
+  useEffect(() => {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      setFormData((prev) => ({
+        ...prev,
+        name: prev.name || currentUser.displayName || "",
+        email: prev.email || currentUser.email || "",
+      }));
+    }
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -165,7 +177,7 @@ const ProviderDetails = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setConfirmOpen(true);
+    handleConfirmSubmit(); // Directly submit without confirmation dialog
   };
 
   const handleConfirmSubmit = async () => {
@@ -189,6 +201,8 @@ const ProviderDetails = () => {
 
       const formattedData = {
         ...formData,
+        name: formData.name || currentUser.displayName || "",
+        email: formData.email || currentUser.email || "",
         city: formData.city || 'Rohini',
         state: formData.state || 'Delhi',
         availability: formattedAvailability,
@@ -200,7 +214,7 @@ const ProviderDetails = () => {
         formattedData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+      console.log('✅ Provider details submitted successfully:', res.data);
       toast.success(res.data.message || 'Provider details submitted successfully! 🚀');
       navigate('/login', { replace: true });
       setTimeout(() => window.location.reload(), 100);
@@ -417,13 +431,13 @@ const ProviderDetails = () => {
         </div>
       </div>
       <Footer />
-      <ConfirmDialog
+      {/* <ConfirmDialog
         open={confirmOpen}
         title="Confirm Submission"
         message="Are you sure you want to submit your provider details?"
         onConfirm={handleConfirmSubmit}
         onCancel={() => setConfirmOpen(false)}
-      />
+      /> */}
     </>
   );
 };

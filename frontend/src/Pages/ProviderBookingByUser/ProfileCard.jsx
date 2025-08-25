@@ -1,7 +1,8 @@
-import UnifiedProfileCard from '../../components/shared/UnifiedProfileCard';
+import UnifiedProfileCard2 from '../../components/shared/UnifiedProfileCard2';
 
 const ProfileCard = ({ serviceData }) => {
-  return <UnifiedProfileCard serviceData={serviceData} mode="view" />;
+  console.log("the data is",serviceData);
+  return <UnifiedProfileCard2 serviceData={serviceData} mode="view" />;
 };
 
 export default ProfileCard;
