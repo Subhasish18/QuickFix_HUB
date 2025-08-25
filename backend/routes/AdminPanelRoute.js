@@ -75,8 +75,8 @@ router.get('/bookings', async (req, res) => {
   try {
     const bookings = await Booking.find()
       .populate([
-        { path: 'userId', select: 'name email' },
-        { path: 'serviceId', select: 'name location' }
+        { path: 'userId', select: 'name email city state' },
+        { path: 'serviceId', select: 'name city state' }
       ]);
     res.json({ bookings });
   } catch (err) {

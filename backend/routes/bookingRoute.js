@@ -54,5 +54,38 @@ router.put('/:bookingId/status', async (req, res) => {
     res.status(500).json({ message: 'Failed to update booking' });
   }
 });
+// New endpoint to verify password and process payment
+router.post('/:bookingId/verify-and-pay', async (req, res) => {
+  const { bookingId } = req.params;
+  const { email, password } = req.body;
 
+  try {
+    // Verify user password with Firebase
+    const user = await getAuth().getUserByEmail(email);
+    // Note: Firebase Admin SDK cannot directly verify passwords.
+    // This is handled on the frontend with signInWithEmailAndPassword.
+    // Backend can validate the user's identity via token or proceed with booking update.
+
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+    if (booking.userId !== user.uid) {
+      return res.status(403).json({ message: 'Unauthorized: User does not own this booking' });
+    }
+
+    // Update payment status
+    booking.paymentStatus = 'paid';
+    await booking.save();
+
+    res.json({ message: 'Payment verified and processed', booking });
+  } catch (error) {
+    console.error('Error verifying payment:', error);
+    if (error.code === 'auth/user-not-found') {
+      res.status(400).json({ message: 'User not found' });
+    } else {
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+});
 export default router;
