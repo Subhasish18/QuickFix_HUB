@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';                           // Optional utility classes
 import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import './ToastMessage.css';
+import 'react-toastify/dist/ReactToastify.css'; // Import the CSS
+import  './ToastMessage.css';
 import { ProfileProvider } from './context/ProfileContext';
 import HomePageMock from './Pages/HomePageMock';
 import Login from './Pages/login/Login';
@@ -23,57 +23,56 @@ import Loader from './MainLoader.jsx';
 
 const App = () => {
   const [loading, setLoading] = useState(true);
-  const [userProfile, setUserProfile] = useState(null);
-
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
-
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2500);
-
-    async function fetchUserProfile() {
-      try {
-        const response = await fetch(`${backendUrl}/api/user/profile`, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setUserProfile(data);
-        } else {
-          console.error('Failed to fetch user profile:', response.statusText);
-        }
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
-      }
-    }
-    fetchUserProfile();
-
+    // Simulate initial loading (e.g. fetching user session, checking auth, etc.)
+    const timer = setTimeout(() => setLoading(false), 2500); 
     return () => clearTimeout(timer);
-  }, [backendUrl]);
+  }, []);
 
-  if (loading) return <Loader />;
+  if (loading) {
+    return <Loader />; // show loader before app renders
+  }
 
   return (
-    <ProfileProvider value={userProfile}>
+    <ProfileProvider>
       <Router>
-        <ToastContainer />
+         {/* Enhanced ToastContainer with custom styling from ToastMessage.jsx */}
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={true}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+          className="custom-toast-container"
+          toastClassName="custom-toast"
+          bodyClassName="custom-toast-body"
+          progressClassName="custom-progress"
+          closeButtonStyle={{
+            color: '#64748b',
+            opacity: 0.7
+          }}
+        />
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/sample" element={<HomePageMock />} />
+          <Route path="/" element={<UserLandingPage />} />
+          <Route path="/userDetails" element={<UserDetails />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/signup-user" element={<SignupUser />} />
-          <Route path="/signup-provider" element={<SignupProvider />} />
-          <Route path="/home" element={<HomePageMock />} />
-          <Route path="/user-landing" element={<UserLandingPage />} />
-          <Route path="/user-details" element={<UserDetails />} />
-          <Route path="/additional-user-details" element={<User_details />} />
-          <Route path="/additional-provider-details" element={<Provider_details />} />
-          <Route path="/hero" element={<Hero />} />
-          <Route path="/service-details" element={<ServiceDetails />} />
-          <Route path="/book-page" element={<BookPage />} />
+          <Route path="/signup" element={<LandingPage />} />
+          <Route path="/signup/user" element={<SignupUser />} />
+          <Route path="/signup/provider" element={<SignupProvider />} />
+          <Route path="/additional-details/user" element={<User_details />} />
+          <Route path="/additional-details/provider" element={<Provider_details/>} />
+          <Route path="/hero" element={<Hero/>} />
+          <Route path='/serviceDetails/:serviceName' element={<ServiceDetails/>} />
+          <Route path='/book' element={<BookPage />} />
           <Route path="/payment" element={<PaymentPage />} />
-          <Route path="/admin-panel" element={<AdminPanel />} />
-          <Route path="/search-results" element={<SearchResults />} />
-          {/* Add other routes as needed */}
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/search" element={<SearchResults />} />
         </Routes>
       </Router>
     </ProfileProvider>
