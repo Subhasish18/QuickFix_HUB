@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react';
-
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; 
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './ToastMessage.css';
-
 import { ProfileProvider } from './context/ProfileContext';
-
 import HomePageMock from './Pages/HomePageMock';
 import Login from './Pages/login/Login';
 import LandingPage from './Pages/Signup/LandingPage';
@@ -28,23 +25,16 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
 
-  // Access backend URL from environment variable
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
-    // Simulate initial loading (e.g. fetching user session, checking auth, etc.)
     const timer = setTimeout(() => setLoading(false), 2500);
 
-    // Example fetch request to backend API to get user profile (replace endpoint as needed)
     async function fetchUserProfile() {
       try {
         const response = await fetch(`${backendUrl}/api/user/profile`, {
-          credentials: "include", // if you handle cookies; otherwise adjust headers accordingly
-          headers: {
-            'Content-Type': 'application/json',
-            // Add authorization token if needed, e.g.:
-            // Authorization: `Bearer ${yourToken}`
-          }
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
         });
         if (response.ok) {
           const data = await response.json();
@@ -61,14 +51,11 @@ const App = () => {
     return () => clearTimeout(timer);
   }, [backendUrl]);
 
-  if (loading) {
-    return <Loader />; // show loader before app renders
-  }
+  if (loading) return <Loader />;
 
   return (
     <ProfileProvider value={userProfile}>
       <Router>
-        {/* Enhanced ToastContainer with custom styling from ToastMessage.jsx */}
         <ToastContainer />
         <Routes>
           <Route path="/" element={<LandingPage />} />
