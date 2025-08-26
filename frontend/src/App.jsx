@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';                           // Optional utility classes
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // Import the CSS
@@ -18,9 +19,20 @@ import BookPage from './Pages/ProviderBookingByUser/BookPage.jsx';
 import PaymentPage from './Pages/Payment/PaymentPage.jsx';
 import AdminPanel from './Pages/Admin/AdminPannel.jsx';
 import SearchResults from './Pages/SearchResults.jsx';
-
+import Loader from './MainLoader.jsx';
 
 const App = () => {
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    // Simulate initial loading (e.g. fetching user session, checking auth, etc.)
+    const timer = setTimeout(() => setLoading(false), 2500); 
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return <Loader />; // show loader before app renders
+  }
+
   return (
     <ProfileProvider>
       <Router>
