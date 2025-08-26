@@ -1,5 +1,5 @@
 import express from 'express';
-import { verifyFirebaseToken } from '../middleware/authMiddleware.js';
+import { verifyFirebaseToken } from '../middleware/AuthMiddleware.js';
 import Review from '../model/Review.js';
 import User from '../model/User.js';
 

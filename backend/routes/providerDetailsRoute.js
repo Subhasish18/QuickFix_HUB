@@ -1,6 +1,6 @@
 import express from 'express';
 import ServiceProvider from '../model/ServiceProvider.js';
-import { verifyFirebaseToken } from '../middleware/authMiddleware.js';
+import { verifyFirebaseToken } from '../middleware/AuthMiddleware.js';
 
 const router = express.Router();
 
