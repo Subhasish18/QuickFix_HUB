@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getAdminDashboard } = require('../controllers/admin.controller');
-const { verifyFirebaseToken } = require('../middleware/authMiddleware');
+const { verifyFirebaseToken } = require('../middleware/AuthMiddleware');
 
 router.get('/dashboard', verifyFirebaseToken, getAdminDashboard);
 
