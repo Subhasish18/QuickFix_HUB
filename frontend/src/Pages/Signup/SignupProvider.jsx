@@ -26,7 +26,7 @@ const SignupProvider = () => {
   const saveProviderToBackend = async (firebaseUser, name, email) => {
     const idToken = await firebaseUser.getIdToken();
     await axios.post(
-      "http://localhost:5000/api/provider-details",
+      "https://quickfix-hub.onrender.com/api/provider-details",
       {
         name,
         email,
