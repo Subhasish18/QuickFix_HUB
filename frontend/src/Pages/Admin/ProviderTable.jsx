@@ -113,7 +113,7 @@ const ProviderTable = ({ providers = [], onView, onRefresh }) => {
     
     setIsDeleting(true);
     try {
-      const response = await axios.delete(`http://localhost:5000/api/admin/providers/${deleteProviderId}`, {
+      const response = await axios.delete(`https://quickfix-hub.onrender.com/api/admin/providers/${deleteProviderId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
 

@@ -26,7 +26,7 @@ const SignupUser = () => {
   const saveUserToBackend = async (firebaseUser, name, email) => {
     const idToken = await firebaseUser.getIdToken();
     await axios.post(
-      "http://localhost:5000/api/user-details",
+      "https://quickfix-hub.onrender.com/api/user-details",
       {
         name,
         email,

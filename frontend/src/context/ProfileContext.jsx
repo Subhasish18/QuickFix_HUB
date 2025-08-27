@@ -22,7 +22,7 @@ export const ProfileProvider = ({ children }) => {
     }
     try {
       const token = await auth.currentUser.getIdToken();
-      const res = await axios.get('http://localhost:5000/api/provider-details/profile', {
+      const res = await axios.get('https://quickfix-hub.onrender.com/api/provider-details/profile', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProvider(res.data);

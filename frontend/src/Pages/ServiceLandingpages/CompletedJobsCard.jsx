@@ -58,7 +58,7 @@ const CompletedJobsCard = () => {
         }
 
         const token = await user.getIdToken();
-        const response = await fetch('http://localhost:5000/api/provider-bookings', {
+        const response = await fetch('https://quickfix-hub.onrender.com/api/provider-bookings', {
           headers: { Authorization: `Bearer ${token}` }
         });
 

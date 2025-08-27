@@ -25,8 +25,8 @@ const SignupProvider = () => {
   // Accepts firebaseUser, name, email for both email and Google signup
   const saveProviderToBackend = async (firebaseUser, name, email) => {
     const idToken = await firebaseUser.getIdToken();
-    await axios.post(
-      "http://localhost:5000/api/provider-details",
+        await axios.post(
+      "https://quickfix-hub.onrender.com/api/provider-details",
       {
         name,
         email,
@@ -38,6 +38,7 @@ const SignupProvider = () => {
         },
       }
     );
+
   };
 
   const handleSubmit = async (e) => {

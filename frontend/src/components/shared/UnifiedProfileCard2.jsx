@@ -147,10 +147,12 @@ const UnifiedProfileCard2 = ({ serviceData, mode = 'view', onUpdate }) => {
 
       const token = await user.getIdToken();
       const res = await axios.put(
-        'http://localhost:5000/api/provider-details/edit',
+        'https://quickfix-hub.onrender.com/api/provider-details/edit',
+        
         updateData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
 
       updateProfile(res.data.provider);
       setShowEditModal(false);

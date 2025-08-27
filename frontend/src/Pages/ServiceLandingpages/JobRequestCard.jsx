@@ -103,7 +103,7 @@ const JobRequestsCard = () => {
         return;
       }
       const token = await user.getIdToken();
-      const res = await axios.get('http://localhost:5000/api/provider-bookings', {
+      const res = await axios.get('https://quickfix-hub.onrender.com/api/provider-bookings', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setJobRequests(res.data.bookings || []);
@@ -127,7 +127,7 @@ const JobRequestsCard = () => {
   const acceptJob = async (jobId) => {
     try {
       const now = new Date().toISOString();
-      const response = await fetch(`http://localhost:5000/api/bookings/${jobId}/status`, {
+      const response = await fetch(`https://quickfix-hub.onrender.com/api/bookings/${jobId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'confirmed', confirmedAt: now }),
@@ -144,7 +144,7 @@ const JobRequestsCard = () => {
 
   const declineJob = async (jobId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/bookings/${jobId}/status`, {
+      const response = await fetch(`https://quickfix-hub.onrender.com/api/bookings/${jobId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Declined' }),

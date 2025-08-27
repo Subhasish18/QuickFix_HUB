@@ -64,7 +64,7 @@ const AdminPanel = () => {
 
   const refreshBookings = async () => {
     try {
-      const bookingsRes = await axios.get('http://localhost:5000/api/admin/bookings');
+      const bookingsRes = await axios.get('https://quickfix-hub.onrender.com/api/admin/bookings');
       setBookings(bookingsRes.data.bookings || []);
     } catch (err) {
       console.error("Bookings fetch error:", err);
@@ -74,7 +74,7 @@ const AdminPanel = () => {
 
   const refreshUsers = async () => {
     try {
-      const usersRes = await axios.get('http://localhost:5000/api/admin/users');
+      const usersRes = await axios.get('https://quickfix-hub.onrender.com/api/admin/users');
       setUsers(usersRes.data.users || []);
     } catch (err) {
       console.error("Users fetch error:", err);
@@ -94,9 +94,9 @@ const AdminPanel = () => {
       setLoading(true);
       try {
         const [usersRes, providersRes, bookingsRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/admin/users'),
-          axios.get('http://localhost:5000/api/admin/providers'),
-          axios.get('http://localhost:5000/api/admin/bookings'),
+          axios.get('https://quickfix-hub.onrender.com/api/admin/users'),
+          axios.get('https://quickfix-hub.onrender.com/api/admin/providers'),
+          axios.get('https://quickfix-hub.onrender.com/api/admin/bookings'),
         ]);
         setUsers(usersRes.data.users || []);
         setProviders(providersRes.data.providers || []);
@@ -118,7 +118,7 @@ const AdminPanel = () => {
     if (!confirmData) return;
     try {
       if (confirmData.type === "user") {
-        await axios.delete(`http://localhost:5000/api/admin/users/${confirmData.id}`);
+        await axios.delete(`https://quickfix-hub.onrender.com/api/admin/users/${confirmData.id}`);
         setUsers(users.filter(u => u._id !== confirmData.id));
         setBookings(bookings.filter(b => b.userId?._id !== confirmData.id));
         showToast('User deleted successfully', 'success');
@@ -436,7 +436,7 @@ const AdminPanel = () => {
                 </div>
                 <ProviderTable providers={providers} onRefresh={async () => {
                   try {
-                    const providersRes = await axios.get('http://localhost:5000/api/admin/providers');
+                    const providersRes = await axios.get('https://quickfix-hub.onrender.com/api/admin/providers');
                     setProviders(providersRes.data.providers || []);
                   } catch (err) {
                     console.error("Providers fetch error:", err);

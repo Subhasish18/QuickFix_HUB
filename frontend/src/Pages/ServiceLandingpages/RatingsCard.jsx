@@ -13,7 +13,7 @@ const RatingsCard = ({ providerId = 'default', isProviderView = true }) => {
     if (providerId === 'default') return;
     try {
       console.log(`[Provider Profile] Fetching reviews for provider:`, providerId, 'Type:', typeof providerId);
-      const response = await axios.get(`http://localhost:5000/api/reviews/${providerId}`);
+      const response = await axios.get(`https://quickfix-hub.onrender.com/api/reviews/${providerId}`);
       setRecentReviews(response.data);
       console.log(`[Provider Profile] Fetched ${response.data.length} reviews for provider ${providerId}`);
       if (response.data.length > 0) {

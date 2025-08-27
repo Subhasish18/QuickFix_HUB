@@ -56,7 +56,7 @@ const PaymentPage = () => {
 
       // Update booking status via backend
       await axios.put(
-        `http://localhost:5000/api/bookings/${bookingId}/status`,
+        `https://quickfix-hub.onrender.com/api/bookings/${bookingId}/status`,
         { paymentStatus: "paid" }
       );
 

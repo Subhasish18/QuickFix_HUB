@@ -28,7 +28,7 @@ const Login = () => {
 
     try {
       // Step 1: Attempt admin login
-      const response = await axios.post('http://localhost:5000/api/login', {
+      const response = await axios.post('https://quickfix-hub.onrender.com/api/login', {
         email,
         password,
       });
@@ -47,7 +47,7 @@ const Login = () => {
         const user = userCredential.user;
         const idToken = await user.getIdToken();
 
-        const loginResponse = await axios.post('http://localhost:5000/api/login', {}, {
+        const loginResponse = await axios.post('https://quickfix-hub.onrender.com/api/login', {}, {
           headers: { Authorization: `Bearer ${idToken}` },
         });
 
@@ -93,7 +93,7 @@ const Login = () => {
       const user = result.user;
       const idToken = await user.getIdToken();
 
-      const response = await axios.post('http://localhost:5000/api/login', {}, {
+      const response = await axios.post('https://quickfix-hub.onrender.com/api/login', {}, {
         headers: { Authorization: `Bearer ${idToken}` },
       });
 
