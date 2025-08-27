@@ -42,7 +42,7 @@ const ServiceDetails = () => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:5000/api/service-details/${serviceName}`)
+      .get(`https://quickfix-hub.onrender.com/api/service-details/${serviceName}`)
       .then((res) => {
         setServices(res.data);
         setLoading(false);

@@ -106,12 +106,14 @@ const UserDetails = () => {
       const idToken = await user.getIdToken();
 
       const res = await axios.put(
-        'http://localhost:5000/api/user-details',
+        'https://quickfix-hub.onrender.com/api/user-details',
+  
         formData,
         {
           headers: { Authorization: `Bearer ${idToken}` },
         }
       );
+
 
       toast.success(res.data.message || "Details updated successfully!");
       navigate('/login');

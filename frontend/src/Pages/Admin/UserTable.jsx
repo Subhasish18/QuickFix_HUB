@@ -113,7 +113,7 @@ const UserTable = ({ users = [], onView, onRefresh }) => {
     
     setIsDeleting(true);
     try {
-      const response = await axios.delete(`http://localhost:5000/api/admin/users/${deleteUserId}`, {
+      const response = await axios.delete(`https://quickfix-hub.onrender.com/api/admin/users/${deleteUserId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
 

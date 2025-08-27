@@ -21,7 +21,7 @@ const Navbar = () => {
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     try {
-      const response = await axios.get(`http://localhost:5000/api/search?q=${searchQuery}`);
+      const response = await axios.get(`https://quickfix-hub.onrender.com/api/search?q=${searchQuery}`);
       navigate('/search', { state: { results: response.data, query: searchQuery } });
       setMobileMenuOpen(false); // close menu after searching
     } catch (error) {
@@ -45,17 +45,17 @@ const Navbar = () => {
   // Fetch user data
   const fetchUserData = async (firebaseToken) => {
     try {
-      const roleRes = await axios.get('http://localhost:5000/api/user-details/role', {
+      const roleRes = await axios.get('https://quickfix-hub.onrender.com/api/user-details/role', {
         headers: { Authorization: `Bearer ${firebaseToken}` },
       });
       const role = roleRes.data.role;
       let profileRes;
       if (role === 'provider') {
-        profileRes = await axios.get('http://localhost:5000/api/provider-details/profile', {
+        profileRes = await axios.get('https://quickfix-hub.onrender.com/api/provider-details/profile', {
           headers: { Authorization: `Bearer ${firebaseToken}` },
         });
       } else {
-        profileRes = await axios.get('http://localhost:5000/api/user-details/profile', {
+        profileRes = await axios.get('https://quickfix-hub.onrender.com/api/user-details/profile', {
           headers: { Authorization: `Bearer ${firebaseToken}` },
         });
       }

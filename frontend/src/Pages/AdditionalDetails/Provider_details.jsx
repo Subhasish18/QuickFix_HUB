@@ -212,7 +212,7 @@ const ProviderDetails = () => {
       };
 
       const res = await axios.put(
-        'http://localhost:5000/api/provider-details',
+        'https://quickfix-hub.onrender.com/api/provider-details',
         formattedData,
         { headers: { Authorization: `Bearer ${token}` } }
       );

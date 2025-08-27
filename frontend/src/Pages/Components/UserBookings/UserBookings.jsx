@@ -112,7 +112,7 @@ const UserBookings = ({ userId }) => {
         const user = auth.currentUser;
         if (!user) throw new Error('User not authenticated');
         const token = await user.getIdToken(true);
-        const response = await fetch(`http://localhost:5000/api/user-bookings/user/${userId}`, {
+        const response = await fetch(`https://quickfix-hub.onrender.com/api/user-bookings/user/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) throw new Error('Failed to fetch bookings');
@@ -159,7 +159,7 @@ const UserBookings = ({ userId }) => {
       const user = auth.currentUser;
       if (!user) throw new Error('User not authenticated');
       const token = await user.getIdToken(true);
-      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}/status`, {
+      const response = await fetch(`https://quickfix-hub.onrender.com/api/bookings/${bookingId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -183,7 +183,7 @@ const UserBookings = ({ userId }) => {
       const user = auth.currentUser;
       if (!user) throw new Error('User not authenticated');
       const token = await user.getIdToken(true);
-      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}/status`, {
+      const response = await fetch(`https://quickfix-hub.onrender.com/api/bookings/${bookingId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

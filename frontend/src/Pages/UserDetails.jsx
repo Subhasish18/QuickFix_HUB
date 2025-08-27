@@ -56,7 +56,7 @@ const UserDetails = ({ onLogout }) => {
   const fetchUserProfile = async (idToken) => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/user-details/profile', {
+      const response = await axios.get('https://quickfix-hub.onrender.com/api/user-details/profile', {
         headers: { Authorization: `Bearer ${idToken}` },
       });
       if (!response.data._id) throw new Error('Invalid user data: ID not found');
@@ -140,7 +140,7 @@ const UserDetails = ({ onLogout }) => {
       const token = await current.getIdToken(true);
 
       const { data } = await axios.put(
-        'http://localhost:5000/api/user-details/edit',
+        'https://quickfix-hub.onrender.com/api/user-details/edit',
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );

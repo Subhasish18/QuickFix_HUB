@@ -14,7 +14,7 @@ const HeroSection = () => {
     if (!searchQuery.trim()) return;
 
     try {
-      const response = await axios.get(`http://localhost:5000/api/search?q=${searchQuery}`);
+      const response = await axios.get(`https://quickfix-hub.onrender.com/api/search?q=${searchQuery}`);
       navigate('/search', { state: { results: response.data, query: searchQuery } });
     } catch (error) {
       console.error('Error searching for providers:', error);

@@ -37,7 +37,7 @@ const RatingsCard = ({ providerId = 'default' }) => {
   const fetchReviews = useCallback(async () => {
     if (providerId === 'default') return;
     try {
-      const response = await axios.get(`http://localhost:5000/api/reviews/${providerId}`);
+      const response = await axios.get(`https://quickfix-hub.onrender.com/api/reviews/${providerId}`);
       setRecentReviews(response.data);
       console.log(`[Booking Page] Fetched ${response.data.length} reviews for provider ${providerId}`);
     } catch (error) {
@@ -152,7 +152,7 @@ const RatingsCard = ({ providerId = 'default' }) => {
         Authorization: `Bearer ${authToken}`
       };
 
-      const response = await axios.post('http://localhost:5000/api/reviews', reviewData, {
+      const response = await axios.post('https://quickfix-hub.onrender.com/api/reviews', reviewData, {
         headers: headers
       });
 

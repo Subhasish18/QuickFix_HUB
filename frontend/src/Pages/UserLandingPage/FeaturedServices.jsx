@@ -35,7 +35,7 @@ const FeaturedServices = () => {
         setLoading(true);
         console.log('Fetching providers from API...');
         
-        const response = await axios.get('http://localhost:5000/api/provider-card-show');
+        const response = await axios.get('https://quickfix-hub.onrender.com/api/provider-card-show');
         console.log('API Response:', response.data);
         
         const providers = response.data;

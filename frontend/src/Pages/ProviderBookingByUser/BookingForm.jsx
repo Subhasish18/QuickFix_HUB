@@ -40,7 +40,7 @@ const BookingForm = ({ serviceId }) => {
         serviceDetails
       };
 
-      const res = await axios.post('http://localhost:5000/api/bookings', bookingData);
+      const res = await axios.post('https://quickfix-hub.onrender.com/api/bookings', bookingData);
 
       toast.success(res.data.message || 'Booking successful! 🎉');
       setForm({ scheduledTime: '', serviceDetails: '' });
