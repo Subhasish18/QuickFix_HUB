@@ -59,6 +59,7 @@ router.post('/', verifyFirebaseToken, async (req, res) => {
       serviceTypes,
       city,
       state,
+      profileComplete: false,
     });
 
     await newProvider.save();
@@ -141,6 +142,7 @@ router.put('/edit', verifyFirebaseToken, async (req, res) => {
     provider.serviceTypes = serviceTypes;
     provider.city = city;
     provider.state = state;
+    provider.profileComplete = true;
     provider.updatedAt = new Date();
 
     await provider.save();
@@ -194,6 +196,7 @@ router.put('/', verifyFirebaseToken, async (req, res) => {
     provider.serviceTypes = serviceTypes;
     provider.city = city;
     provider.state = state;
+    provider.profileComplete = true;
     provider.updatedAt = new Date();
 
     await provider.save();

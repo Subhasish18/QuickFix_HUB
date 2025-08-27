@@ -43,6 +43,7 @@ router.post('/', verifyFirebaseToken, async (req, res) => {
       phoneNumber,
       city,
       state,
+      profileComplete: false,
       createdAt: new Date(),
       updatedAt: new Date()
     });
@@ -162,6 +163,7 @@ router.put('/', verifyFirebaseToken, async (req, res) => {
     user.phoneNumber = phoneNumber || '';
     user.city = city || 'Rohini';
     user.state = state || 'Delhi';
+    user.profileComplete = true;
     user.updatedAt = new Date();
 
     await user.save();
