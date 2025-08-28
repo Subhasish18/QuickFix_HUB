@@ -221,16 +221,6 @@ const LandingPage = () => {
                     <span className="text-sm font-medium text-gray-700">Free to join • Quick setup • Secure platform</span>
                   </div>
                 </div>
-
-                {/* Login Link */}
-                <div className="mt-8 text-center animate-fade-in-up" style={{ animationDelay: '1.5s' }}>
-                  <p className="text-gray-600">
-                    Already have an account?{' '}
-                    <a href="/login" className="font-semibold text-blue-600 hover:text-blue-500 transition-colors">
-                      Sign in here
-                    </a>
-                  </p>
-                </div>
               </div>
             </div>
           </div>
