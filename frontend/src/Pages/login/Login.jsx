@@ -325,16 +325,10 @@ const Login = () => {
                       type="checkbox"
                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
-                    <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                      Remember me
-                    </label>
+                   
                   </div>
 
-                  <div className="text-sm">
-                    <a href="#" className="font-medium text-blue-600 hover:text-blue-500 transition-colors">
-                      Forgot your password?
-                    </a>
-                  </div>
+                  
                 </div>
 
                 {error && (
@@ -389,15 +383,6 @@ const Login = () => {
                       Continue with Google
                     </button>
                   </div>
-                </div>
-
-                <div className="text-center animate-fade-in-up" style={{ animationDelay: '3.3s' }}>
-                  <p className="text-sm text-gray-600">
-                    Don't have an account?{' '}
-                    <a href="/signup" className="font-semibold text-blue-600 hover:text-blue-500 transition-colors">
-                      Sign up here
-                    </a>
-                  </p>
                 </div>
               </form>
             </div>
