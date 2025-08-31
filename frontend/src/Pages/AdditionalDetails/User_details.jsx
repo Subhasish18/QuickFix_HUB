@@ -117,7 +117,7 @@ const UserDetails = () => {
 
       toast.success(res.data.message || "Details updated successfully!");
       navigate('/login');
-      setTimeout(() => window.location.reload(), 200);
+      // setTimeout(() => window.location.reload(), 200);
 
     } catch (err) {
       console.error("Error updating user details:", err);
