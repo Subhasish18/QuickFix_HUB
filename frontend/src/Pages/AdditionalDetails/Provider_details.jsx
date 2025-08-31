@@ -219,7 +219,7 @@ const ProviderDetails = () => {
       console.log('✅ Provider details submitted successfully:', res.data);
       toast.success(res.data.message || 'Provider details submitted successfully! 🚀');
       navigate('/login', { replace: true });
-      setTimeout(() => window.location.reload(), 100);
+      // setTimeout(() => window.location.reload(), 100);
     } catch (err) {
       console.error('❌ Error submitting provider details:', err);
       toast.error(err.response?.data?.message || 'Failed to submit provider details. Please try again.');
